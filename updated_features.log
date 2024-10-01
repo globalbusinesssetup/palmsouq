@@ -1,0 +1,176 @@
+v3.2.8
+----------------
+- Uploaded file size validation form the configuration file
+- Updated the product collection feature in homepage
+- Fixed store creation date in store page
+
+
+v3.2.7
+----------------
+- Added the feature of sending delivered emails for registered users
+- Added category data in the product list in the admin panel
+- Made the verified option configurable for the admin
+
+v3.2.6
+----------------
+- Added category support in banner source
+- Design improvement and fix
+- Translation issue fix for detail page
+- Attribute image feature fix
+
+v3.2.5
+----------------
+- Ordered product image in cart/order/shipping page
+- Updated facebook pixel integration
+- Error handling in product detail page
+
+
+v3.2.4
+----------------
+- Solved brands deletion issue
+
+
+v3.2.3
+----------------
+- Solved the issue of price sorting if the offered price is empty
+
+
+v3.2.2
+----------------
+- Design improvement
+- Fixed rating issue
+
+
+v3.2.1
+----------------
+- Product image for product variant
+- Integrated free shipping feature
+- Added product collection in bulk upload
+- Added sku in inventory for bulk upload
+- Added image url support in bulk upload
+- Default payment gateway setting added
+- Default location setting added
+- Multi language support in PDF in email
+- PWA integrated
+
+
+v3.1.2
+----------------
+- Design improvement
+- Withdrawal feature updated
+- Site feature issue fix
+- Language data fix
+
+v3.1.1
+----------------
+- Multiple deletion in the admin panel
+- Multiple invoice download of orders
+- Added `Become a seller` feature
+- Added support of bulk upload for GCS
+- Updated sitemap page
+- Bank transfer payment integration
+- Integrated google analytics
+- Integrated facebook pixel
+- Implemented remember me feature
+- Integrated cookie banner
+- Invoice feature for vendors
+- Home page feature section configurable from the admin panel
+- Whatsapp chat button integrated
+- Single shipping rule feature integrated
+- Design update in shipping page of the website
+- Added pickup price address for shipping
+- Inject javascript from the admin panel(UI > Custom scripts)
+- Admin panel order email issue solved for the guest users
+- Issue fixed of Iyzico payment gateway
+- Issue fixed of multiple variation selection price
+
+v3.0.2
+----------------
+- Added missing sample data for translation
+
+
+v3.0.1
+----------------
+- Added XML sitemap(For server-side rendering)
+- Solved the suggested category issue
+
+
+v2.1.2
+----------------
+- Bulk upload feature integrated
+- Integrated delete button for registered users
+- Data deletion issue fixed
+- Address add/update issue fix
+- Dropdown design fix on the shipping page
+- Follow/unfollow feature fix
+- Activate with purchase code feature integrated
+- Made the guest checkout optional
+- Attach PDF optional feature
+- Send an email to the seller after a successful order
+- Differentiate the new orders and users in the admin panel
+
+
+v2.1.1
+----------------
+- Integrated guest checkout
+- Header links configurable from the admin panel
+- Moved Country list to the server
+- Updated price limit
+- Solved translation issues
+- Solved RTL design issues
+
+
+v2.0.2
+----------------
+- Fixed update migration issue generated in v2.0.1
+- Updated the translation section in the documentation
+
+
+v2.0.1
+----------------
+- Multi language feature integrated
+- Iyzico payment gateway integrated
+- Added slug option for products, collection, brands, banners
+- Design Improvement and fix
+- Fixed delete vendor, product issue
+- Fixed attribute update issue
+
+v1.0.7
+----------------
+- Solved the issue of the admin profile update
+- Added video support in WYSIWYG Editor
+- Added support for decimal values from the admin panel
+- Solved issue of quantity selection if there is no attribute
+- Added slider loop and auto slide
+- Fixed design issues
+
+v1.0.6
+----------------
+- Integrated URL support for media
+- Media storage configurable from the setting page
+- Fixed the issue of redirecting after login
+
+v1.0.5
+----------------
+- Fixed the issue of product inventory
+
+v1.0.4
+----------------
+- Flutterwave payment gateway integrated
+
+v1.0.3
+----------------
+- Custom CSS and color configurable from admin panel "UI > Site Setting"
+- Removed manual import of database and make it automated while installing
+
+v1.0.2
+----------------
+- Dynamic currency icon position(Left/Right of price)
+- Metadata, site logos, SMTP, and social login credentials configurable from the admin panel
+
+
+v1.0.1
+----------------
+- Store page integrated
+- Order tracking integrated
+- Store follow/unfollow by user
