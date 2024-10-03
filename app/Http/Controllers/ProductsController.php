@@ -97,7 +97,7 @@ class ProductsController extends ControllerHelper
 
                 $query = $query->select('products.id', 'products.title', 'products.image',
                     'products.unit', 'products.tax_rule_id', 'products.shipping_rule_id',
-                    'products.brand_id', 'products.purchased',
+                    'products.brand_id', 'products.purchased', 'products.banner_image',
                     'products.selling', 'products.offered', 'products.barcode', 'products.supplier', 
                     'products.supplier_item_code', 'products.status',
                     'products.created_at', 'pl.title', 'pl.description',
@@ -118,7 +118,7 @@ class ProductsController extends ControllerHelper
                     ->with('tax_rules');
 
                 $query = $query->select('products.id', 'products.title', 'products.image',
-                    'products.unit',
+                    'products.unit', 'products.banner_image',
                     'products.tax_rule_id', 'products.shipping_rule_id',
                     'products.brand_id', 'products.purchased',
                     'products.selling', 'products.offered', 'products.status',
@@ -759,14 +759,24 @@ class ProductsController extends ControllerHelper
         try {
             $lang = $request->header('language');
 
-
+            // Validation
             $validate = Validation::image($request);
             if ($validate) {
                 return response()->json($validate);
             }
 
-            $image_info = FileHelper::uploadImage($request['photo'], 'product');
-            $request['image'] = $image_info['name'];
+            // Check if 'photo' or 'banner' is present in the request
+            if ($request->hasFile('photo')) {
+                // Upload 'photo' to the 'image' field
+                $image_info = FileHelper::uploadImage($request->file('photo'), 'product');
+                $request['image'] = $image_info['name'];
+            } elseif ($request->hasFile('banner')) {
+                // Upload 'banner' to the 'banner_image' field
+                $banner_info = FileHelper::uploadImage($request->file('banner'), 'product');
+                $request['banner_image'] = $banner_info['name'];
+            } else {
+                return response()->json(['error' => 'No image or banner uploaded'], 400); // Return an error if neither is present
+            }
 
             $product = $id ? Product::with('product_images')
                 ->with('flash_sale_product.flash_sale')
@@ -774,7 +784,6 @@ class ProductsController extends ControllerHelper
                 ->find($id) : null;
 
             if (is_null($product)) {
-
                 if ($can = Utils::userCan($this->user, 'product.create')) {
                     return $can;
                 }
@@ -783,9 +792,7 @@ class ProductsController extends ControllerHelper
                 $request['id'] = Utils::idGenerator(new Product);
                 $product = Product::create($request->all());
                 $id = $product->id;
-
             } else {
-
                 if ($can = Utils::userCan($this->user, 'product.edit')) {
                     return $can;
                 }
@@ -800,7 +807,7 @@ class ProductsController extends ControllerHelper
                 }
             }
 
-
+            // Query for returning product
             $query = Product::query();
             $query = $query->with(['product_images.attributes']);
             $query = $query->with('flash_sale_product.flash_sale');
@@ -811,13 +818,10 @@ class ProductsController extends ControllerHelper
                     $join->on('pl.product_id', '=', 'products.id');
                     $join->where('pl.lang', $lang);
                 });
-                $query = $query->select('products.*', 'pl.title', 'pl.description',
-                    'pl.overview', 'pl.unit', 'pl.badge',
-                    'pl.meta_title', 'pl.meta_description');
+                $query = $query->select('products.*', 'pl.title', 'pl.description', 'pl.overview', 'pl.unit', 'pl.badge', 'pl.meta_title', 'pl.meta_description');
             }
 
             $data = $query->find($id);
-
 
             return response()->json(new Response($request->token, $data));
 
@@ -825,4 +829,6 @@ class ProductsController extends ControllerHelper
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
+
 }

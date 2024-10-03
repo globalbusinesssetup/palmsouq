@@ -291,19 +291,25 @@ class BrandsController extends ControllerHelper
 
     public function upload(Request $request, $id = null)
     {
-
         try {
             $lang = $request->header('language');
 
-
+            // Validate the incoming request for image
             $validate = Validation::image($request);
             if ($validate) {
                 return response()->json($validate);
             }
 
-            $image_info = FileHelper::uploadImage($request['photo'], 'brand');
-            $request['image'] = $image_info['name'];
+            // Check if the request contains a 'banner' or 'photo', handle accordingly
+            if ($request->has('banner')) {
+                $image_info = FileHelper::uploadImage($request['banner'], 'brand');
+                $request['banner_image'] = $image_info['name']; // Save to 'banner_image' field
+            } else {
+                $image_info = FileHelper::uploadImage($request['photo'], 'brand');
+                $request['image'] = $image_info['name']; // Save to 'image' field
+            }
 
+            // Check if the ID exists, if not, create a new brand
             $brand = $id ? Brand::find($id) : null;
 
             if (is_null($brand)) {
@@ -327,12 +333,20 @@ class BrandsController extends ControllerHelper
                 }
 
                 $brand_image = $brand->image;
+                $banner_image = $brand->banner_image;
+
+                // Update the brand and delete the old images if updated
                 if ($brand->update($request->all())) {
-                    FileHelper::deleteFile($brand_image);
+                    if ($request->has('photo')) {
+                        FileHelper::deleteFile($brand_image); // Delete old image
+                    }
+                    if ($request->has('banner')) {
+                        FileHelper::deleteFile($banner_image); // Delete old banner
+                    }
                 }
             }
 
-
+            // Handle language selection and retrieve the brand data
             $query = Brand::query();
             if ($lang) {
                 $query = $query->leftJoin('brand_langs as b', function ($join) use ($lang) {
@@ -343,11 +357,13 @@ class BrandsController extends ControllerHelper
             }
             $brand = $query->find($id);
 
+            // Return the final response with the brand details
             return response()->json(new Response($request->token, $brand));
 
-
         } catch (\Exception $ex) {
+            // Handle exceptions and return an error response
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
 }

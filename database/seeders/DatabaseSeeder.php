@@ -108,6 +108,7 @@ class DatabaseSeeder extends Seeder
         $this->call(WhatsappBtnSeeder::class);
         $this->call(ShipingAddressSeeder::class);
         $this->call(CustomScriptSeeder::class);
+        $this->call(TestimonialSeeder::class);
 
     }
 }

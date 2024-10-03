@@ -324,16 +324,27 @@ class CategoriesController extends ControllerHelper
         try {
             $lang = $request->header('language');
 
+            // Validate image or banner
             $validate = Validation::image($request);
             if ($validate) {
                 return response()->json($validate);
             }
 
-            $image_info = FileHelper::uploadImage($request['photo'], 'category');
-            $request['image'] = $image_info['name'];
+            // Handle image upload
+            $imageField = $request->hasFile('photo') ? 'photo' : 'banner';
+            $image_info = FileHelper::uploadImage($request[$imageField], 'category');
 
+            // Determine which field to set based on the uploaded file
+            if ($imageField === 'photo') {
+                $request['image'] = $image_info['name'];
+            } else {
+                $request['banner_image'] = $image_info['name'];
+            }
+
+            // Find the category by ID
             $category = $id ? Category::find($id) : null;
 
+            // If category doesn't exist, create a new one
             if (is_null($category)) {
                 if ($can = Utils::userCan($this->user, 'category.create')) {
                     return $can;
@@ -344,21 +355,31 @@ class CategoriesController extends ControllerHelper
                 $category = Category::create($request->all());
                 $id = $category->id;
 
-            } else {
+            } else { // If category exists, update it
                 if ($can = Utils::userCan($this->user, 'category.edit')) {
                     return $can;
                 }
+
                 if (!$this->isSuperAdmin && $isOwner = Utils::isDataOwner($this->user, $category)) {
                     return $isOwner;
                 }
 
+                // Store the current category image for deletion
                 $category_image = $category->image;
+                $category_banner_image = $category->banner_image;
+
+                // Update the category with new data
                 if ($category->update($request->all())) {
-                    FileHelper::deleteFile($category_image);
+                    // Delete old images if they were updated
+                    if ($imageField === 'photo') {
+                        FileHelper::deleteFile($category_banner_image); // Delete old banner if photo is updated
+                    } else {
+                        FileHelper::deleteFile($category_image); // Delete old image if banner is updated
+                    }
                 }
             }
 
-
+            // Prepare the query for retrieving category data
             $query = Category::query();
             if ($lang) {
                 $query = $query->leftJoin('category_langs as cl', function ($join) use ($lang) {
@@ -368,14 +389,14 @@ class CategoriesController extends ControllerHelper
                 $query = $query->select('categories.*', 'cl.title', 'cl.meta_title', 'cl.meta_description');
             }
 
+            // Find the category by ID
             $category = $query->find($id);
 
+            // Return the response
             return response()->json(new Response($request->token, $category));
-
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
-
     }
 }

@@ -828,6 +828,19 @@ class Validation
     }
 
 
+    public static function testiMonial($request)
+    {
+        $rules = [
+            'client_name' => 'required',
+            'testimonial' => 'required',
+            'rating' => 'required',
+            'status' => 'required',
+        ];
+
+        return self::validationMessage($request, $rules);
+    }
+
+
 
     public static function brand($request)
     {
@@ -994,17 +1007,26 @@ class Validation
 
     public static function image($request, $errorType = 'image')
     {
-        if(env('MEDIA_STORAGE') == config('env.media.URL')) {
+        // Check the environment configuration for media storage
+        if (env('MEDIA_STORAGE') == config('env.media.URL')) {
+            // Require either 'photo' or 'banner' to be present
             $rules = [
-                'photo' => 'required',
+                'photo' => 'required_without:banner', // 'photo' is required if 'banner' is not provided
+                'banner' => 'required_without:photo', // 'banner' is required if 'photo' is not provided
             ];
             return self::validationMessage($request, $rules, $errorType);
-
         } else {
-            return self::validationMessage($request, self::imageRules(), $errorType);
+            // Default image rules for media storage, with photo or banner validation
+            $rules = self::imageRules(); // Get existing image validation rules
+            
+            // Add 'photo' or 'banner' validation
+            $rules['photo'] = 'required_without:banner'; // 'photo' required if no 'banner'
+            $rules['banner'] = 'required_without:photo'; // 'banner' required if no 'photo'
+            
+            return self::validationMessage($request, $rules, $errorType);
         }
-
     }
+    
 
     public static function video($request, $errorType = 'video')
     {

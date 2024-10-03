@@ -540,8 +540,7 @@ Route::group([
         ], function (){
             Route::get('all', [TestimonialController::class, 'all']);
             Route::get('find/{id}', [TestimonialController::class, 'show']);
-            Route::post('action/{id?}', [TestimonialController::class, 'store']);
-            Route::put('testimonials/{id}', [TestimonialController::class, 'update']);
+            Route::post('action/{id?}', [TestimonialController::class, 'action']);
             Route::delete('delete/{id}', [TestimonialController::class, 'destroy']);
         });
 

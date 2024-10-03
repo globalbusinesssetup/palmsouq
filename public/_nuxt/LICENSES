@@ -28,6 +28,43 @@
 * Copyright (c) 2020 Apoorv Saxena; Licensed MIT */
 
 
+//! moment.js
+
+//! moment.js locale configuration
+
+
+/*!
+ * Glide.js v3.6.0
+ * (c) 2013-2022 Jędrzej Chałubek (https://github.com/jedrzejchalubek/)
+ * Released under the MIT License.
+ */
+
+
+/*!
+ * Chart.js v2.9.4
+ * https://www.chartjs.org
+ * (c) 2020 Chart.js Contributors
+ * Released under the MIT License
+ */
+
+
+/*!
+ * Quill Editor v1.3.7
+ * https://quilljs.com/
+ * Copyright (c) 2014, Jason Chen
+ * Copyright (c) 2013, salesforce.com
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <http://feross.org>
+ * @license  MIT
+ */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+
 //! Copyright (c) JS Foundation and other contributors
 
 //! github.com/moment/moment-timezone
@@ -192,43 +229,6 @@
    * 
    * ====================================================================
    */
-
-
-/*!
- * Glide.js v3.6.0
- * (c) 2013-2022 Jędrzej Chałubek (https://github.com/jedrzejchalubek/)
- * Released under the MIT License.
- */
-
-
-/*!
- * Chart.js v2.9.4
- * https://www.chartjs.org
- * (c) 2020 Chart.js Contributors
- * Released under the MIT License
- */
-
-
-/*!
- * Quill Editor v1.3.7
- * https://quilljs.com/
- * Copyright (c) 2014, Jason Chen
- * Copyright (c) 2013, salesforce.com
- */
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <http://feross.org>
- * @license  MIT
- */
-
-/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
-
-
-//! moment.js
-
-//! moment.js locale configuration
 
 
 /*! lozad.js - v1.16.0 - 2020-09-06

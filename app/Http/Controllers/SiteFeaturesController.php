@@ -195,7 +195,6 @@ class SiteFeaturesController extends ControllerHelper
 
             $lang = $request->header('language');
 
-
             if($can = Utils::userCan($this->user, 'home_slider.delete')){
                 return $can;
             }
