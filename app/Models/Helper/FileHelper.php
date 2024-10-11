@@ -14,7 +14,8 @@ class FileHelper
 {
 
 
-    public static function getUploadPath(){
+    public static function getUploadPath()
+    {
         // For cpanel
         // return base_path() . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
 
@@ -341,5 +342,4 @@ class FileHelper
         }
 
     }
-
 }

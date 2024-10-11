@@ -661,7 +661,7 @@ class Validation
             'description' => 'required',
             'overview' => 'required',
             'selling' => 'required|numeric|min:0|not_in:0',
-            'purchased' => 'required|numeric|min:0|not_in:0',
+            // 'purchased' => 'required|numeric|min:0|not_in:0',
             'tax_rule_id' => 'required|numeric|min:0|not_in:0',
             'shipping_rule_id' => 'required|numeric|min:0|not_in:0'
         ];

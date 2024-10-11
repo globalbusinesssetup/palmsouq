@@ -12,7 +12,7 @@ class Product extends Model
 
 
     protected $casts = [
-        'purchased' => 'float',
+        // 'purchased' => 'float',
         'offered' => 'float',
         'selling' => 'float',
         'review_count' => 'integer',

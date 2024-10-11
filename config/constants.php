@@ -2,7 +2,7 @@
 return [
     'media' => [
         'DEFAULT_IMAGE' => env('DEFAULT_IMAGE'),
-        'MAX_IMG_UPLOAD' => 10,
+        'MAX_IMG_UPLOAD' => 100,
         'MAX_IMAGE_SIZE' => 1024,
         'MAX_VIDEO_SIZE' => 2048,
         'MAX_FILE_SIZE' => 2048,

@@ -44,55 +44,39 @@ class ImagesController extends ControllerHelper
     public function upload(Request $request)
     {
         try {
-
-
             if ($can = Utils::userCan($this->user, 'bulk_upload.edit')) {
                 return $can;
             }
 
             $images = [];
-
             $lang = $request->header('language');
 
             if ($request->hasFile('images')) {
-
-
-
-                if(count($request->images) > Config::get('constants.media.MAX_IMG_UPLOAD')) {
-
-                    return response()->json(Validation::error($request->token,
-                        __('lang.multi_img', [], $lang),
-                        'multiple_image'));
+                if (count($request->images) > Config::get('constants.media.MAX_IMG_UPLOAD')) {
+                    return response()->json(Validation::error($request->token, __('lang.multi_img', [], $lang), 'multiple_image'));
                 }
 
-
                 foreach ($request->images as $img) {
-
                     $validate = Validation::multipleImages(['photo' => $img], $request->token);
                     if ($validate) {
                         return response()->json($validate);
                     }
 
-                    $image_info = FileHelper::uploadImage($img, 'product');
+                    // Call the uploadImage method with the original filename
+                    $image_info = FileHelper::uploadImage($img, $img->getClientOriginalName());
 
                     array_push($images, $image_info);
-
                 }
-
-
 
                 return response()->json(new Response($request->token, $images));
             }
 
-            return response()->json(Validation::error($request->token,
-                __('lang.invalid_parameter', [], $lang),
-                'multiple_image'));
-            // return response()->json(Validation::invalid_parameter($request->token));
-
+            return response()->json(Validation::error($request->token, __('lang.invalid_parameter', [], $lang), 'multiple_image'));
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage(), 'multiple_image'));
         }
     }
+
 
 
 
