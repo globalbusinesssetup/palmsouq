@@ -120,7 +120,7 @@ class ProductsController extends ControllerHelper
                 $query = $query->select('products.id', 'products.title', 'products.image',
                     'products.unit', 'products.banner_image',
                     'products.tax_rule_id', 'products.shipping_rule_id',
-                    'products.brand_id', 'products.purchased',
+                    'products.brand_id', 'products.purchased', 'products.supplier_item_code',
                     'products.selling', 'products.offered', 'products.status',
                     'products.created_at');
 
