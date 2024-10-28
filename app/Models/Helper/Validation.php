@@ -858,7 +858,8 @@ class Validation
             'title' => 'required',
             'slug' => 'required',
             'meta_title' => 'required',
-            'meta_description' => 'required'
+            'meta_description' => 'required',
+            'meta_keywords' => 'nullable|string|max:255'
         ];
 
         return self::validationMessage($request, $rules);

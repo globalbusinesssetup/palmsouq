@@ -12,7 +12,9 @@ class Category extends Model
 
 
     protected $fillable = [
-        'title', 'image', 'banner_image', 'status', 'admin_id', 'slug', 'meta_title', 'meta_description', 'parent', 'in_footer'
+        'title', 'image', 'banner_image', 'status', 'admin_id', 
+        'slug', 'meta_title', 'meta_description', 'meta_keywords', 
+        'parent', 'in_footer'
     ];
 
     protected $hidden = [

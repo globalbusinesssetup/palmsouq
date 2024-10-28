@@ -179,12 +179,9 @@ class CategoriesController extends ControllerHelper
                         __('lang.slug_exists', [], $lang)));
                 }
 
-
-                if((int)$request->parent == (int)$id){
-
+                if ((int)$request->parent == (int)$id) {
                     return response()->json(Validation::error($request->token,
                         __('lang.cat_parent', [], $lang)));
-
                 }
 
                 $filtered = array_filter($request->all(), function ($element) {
@@ -192,8 +189,16 @@ class CategoriesController extends ControllerHelper
                 });
 
                 if ($lang) {
-                    [$langData, $mainData] = Utils::seperateLangData($filtered, ['title', 'meta_title', 'meta_description']);
+                    [$langData, $mainData] = Utils::seperateLangData($filtered, [
+                        'title', 
+                        'meta_title', 
+                        'meta_description',
+                        'meta_keywords' // Add meta_keywords here
+                    ]);
+
+                    // Update the main data with the new fields
                     Category::where('id', $id)->update($mainData);
+
                     $existingLang = CategoryLang::where('category_id', $id)
                         ->where('lang', $lang)
                         ->first();
@@ -202,7 +207,6 @@ class CategoriesController extends ControllerHelper
                         $langData['category_id'] = $id;
                         $langData['lang'] = $lang;
                         CategoryLang::create($langData);
-
                     } else {
                         CategoryLang::where('id', $existingLang->id)->update($langData);
                     }
@@ -211,33 +215,45 @@ class CategoriesController extends ControllerHelper
                 }
 
             } else {
+                // Check if the user has permission to create a category
                 if ($can = Utils::userCan($this->user, 'category.create')) {
-                    return $can;
+                    return $can; // Return permission error if they can't create
                 }
-
+            
+                // Check if the slug already exists
                 if ($bySlug) {
-                    return response()->json(Validation::error($request->token,
-                        __('lang.slug_exists', [], $lang)));
+                    return response()->json(Validation::error($request->token, __('lang.slug_exists', [], $lang)));
                 }
-
-                $request['image'] = Config::get('constants.media.DEFAULT_IMAGE');
-                $request['admin_id'] = $request->user()->id;
-                $request['id'] = Utils::idGenerator(new Category());
-
+            
+                // Prepare the data for creating a new category
+                $request['image'] = Config::get('constants.media.DEFAULT_IMAGE'); // Default image
+                $request['admin_id'] = $request->user()->id; // ID of the admin creating the category
+                $request['id'] = Utils::idGenerator(new Category()); // Generate a new ID for the category
+            
                 if ($lang) {
-                    [$langData, $mainData] = Utils::seperateLangData($request->all(), ['title', 'meta_title', 'meta_description']);
-                    $category = Category::create($mainData);
-
+                    // Separate language data from the main data
+                    [$langData, $mainData] = Utils::seperateLangData($request->all(), [
+                        'title', 
+                        'meta_title', 
+                        'meta_description',
+                        'meta_keywords' // Ensure meta_keywords is included
+                    ]);
+            
+                    // Create the main category record
+                    $category = Category::create($mainData); // This should include the image, admin_id, etc.
+            
+                    // Set the category ID in the language data and create the language-specific record
                     $langData['category_id'] = $category->id;
                     $langData['lang'] = $lang;
-                    CategoryLang::create($langData);
-                    $id = $category->id;
-
+                    CategoryLang::create($langData); // Create the language-specific entry
+                    $id = $category->id; // Save the category ID for further use
+            
                 } else {
-                    $category = Category::create($request->all());
-                    $id = $category->id;
+                    // If no language specified, create the category with all request data
+                    $category = Category::create($request->all()); // Ensure that $request includes meta_keywords
+                    $id = $category->id; // Save the category ID for further use
                 }
-            }
+            }            
 
             $query = Category::query();
             if ($lang) {
@@ -245,7 +261,7 @@ class CategoriesController extends ControllerHelper
                     $join->on('cl.category_id', '=', 'categories.id');
                     $join->where('cl.lang', $lang);
                 });
-                $query = $query->select('categories.*', 'cl.title', 'cl.meta_title', 'cl.meta_description');
+                $query = $query->select('categories.*', 'cl.title', 'cl.meta_title', 'cl.meta_description', 'cl.meta_keywords');
             }
 
             $category = $query->find($id);
@@ -256,6 +272,7 @@ class CategoriesController extends ControllerHelper
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
 
 
     public function delete(Request $request, $id)
