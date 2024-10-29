@@ -388,7 +388,7 @@ class CategoriesController extends ControllerHelper
                 // Update the category with new data
                 if ($category->update($request->all())) {
                     // Delete old images if they were updated
-                    if ($imageField === 'photo') {
+                    if ($imageField === 'banner') {
                         FileHelper::deleteFile($category_banner_image); // Delete old banner if photo is updated
                     } else {
                         FileHelper::deleteFile($category_image); // Delete old image if banner is updated

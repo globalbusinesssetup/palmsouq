@@ -99,9 +99,9 @@ class ProductsController extends ControllerHelper
                     'products.unit', 'products.tax_rule_id', 'products.shipping_rule_id',
                     'products.brand_id', 'products.purchased', 'products.banner_image',
                     'products.selling', 'products.offered', 'products.barcode', 'products.supplier', 
-                    'products.supplier_item_code', 'products.status',
+                    'products.supplier_item_code', 'products.status', 'products.sku',
                     'products.created_at', 'pl.title', 'pl.description',
-                    'pl.overview', 'pl.unit', 'pl.badge',
+                    'pl.overview', 'pl.unit', 'pl.badge', 'products.stock',
                     'pl.meta_title', 'pl.meta_description');
 
 
@@ -118,8 +118,8 @@ class ProductsController extends ControllerHelper
                     ->with('tax_rules');
 
                 $query = $query->select('products.id', 'products.title', 'products.image',
-                    'products.unit', 'products.banner_image',
-                    'products.tax_rule_id', 'products.shipping_rule_id',
+                    'products.unit', 'products.banner_image', 'products.stock',
+                    'products.tax_rule_id', 'products.shipping_rule_id', 'products.sku',
                     'products.brand_id', 'products.purchased', 'products.supplier_item_code',
                     'products.selling', 'products.offered', 'products.status',
                     'products.created_at');
