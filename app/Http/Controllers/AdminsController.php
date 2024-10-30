@@ -66,9 +66,9 @@ class AdminsController extends Controller
         Artisan::call('config:cache');
         Artisan::call('config:clear');
         Artisan::call('route:cache');
-        Artisan::call('route:clear ');
+        Artisan::call('route:clear');
         Artisan::call('cache:clear');
-        //Artisan::call('optimize');
+        Artisan::call('optimize');
         return response()->json(new Response($request->token, true));
     }
 
