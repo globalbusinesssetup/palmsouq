@@ -200,6 +200,7 @@ class FrontendController extends Controller
                                     'id', 
                                     'title', 
                                     'image',
+                                    'banner_image',
                                 )
                                 ->first();
             }
