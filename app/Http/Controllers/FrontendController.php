@@ -1537,19 +1537,66 @@ class FrontendController extends Controller
                     $collections = ProductCollection::query();
                     $totalRecordCount = $collections->count();
                     $totalCollectionProduct = ($totalRecordCount + 1) * Config::get('constants.homePagePagination.COLLECTION');
-                    $data['collections'] = $collections->with(['product_collections' =>
-                        function ($query) use ($totalCollectionProduct) {
-                            $query->take($totalCollectionProduct);
-                            $query->orderBy('updated_at', 'DESC');
+                    // In the home method
+
+                    $data['collections'] = $collections->with([
+                        'product_collections.product' => function ($query) use ($totalCollectionProduct, $lang) {
+                            $query->with(['product_inventories' => function ($inventoryQuery) use ($totalCollectionProduct) {
+                                $inventoryQuery->take($totalCollectionProduct)
+                                            ->orderBy('updated_at', 'DESC')
+                                            ->with('inventory_attributes'); // Ensure to load inventory attributes
+                            }])
+                            ->leftJoin('product_langs as avl', function ($join) use ($lang) {
+                                $join->on('products.id', '=', 'avl.product_id')
+                                    ->where('avl.lang', $lang);
+                            })
+                            ->select([
+                                'products.id',
+                                'products.slug',
+                                'avl.badge',
+                                'products.selling',
+                                'products.offered',
+                                'products.image',
+                                'products.review_count',
+                                'products.rating',
+                                'products.shipping_rule_id',
+                                'flash_sale_products.price',
+                                'flash_sales.end_time',
+                                'avl.title'
+                            ]);
                         }
                     ])
-                        ->where('status', Config::get('constants.status.PUBLIC'))
-                        ->get();
+                    ->where('status', Config::get('constants.status.PUBLIC'))
+                    ->get();
 
+                    // Transforming the inventories into the desired format
                     $data['collections']->each(function ($collection) {
-                        $collection->setRelation('product_collections',
-                            $collection->product_collections->take(Config::get('constants.homePagePagination.COLLECTION')));
+                        $collection->setRelation('product_collections', 
+                            $collection->product_collections->map(function ($productCollection) {
+                                // Transform product_collection to include the formatted inventories
+                                $productCollection->inventory = $productCollection->product->product_inventories->map(function ($inventory) {
+                                    return [
+                                        'id' => $inventory->id,
+                                        'created_at' => $inventory->created_at,
+                                        'updated_at' => $inventory->updated_at,
+                                        'product_id' => $inventory->product_id,
+                                        'quantity' => $inventory->quantity,
+                                        'price' => $inventory->price,
+                                        'sku' => $inventory->sku,
+                                        'inventory_attributes' => $inventory->inventory_attributes->map(function ($attribute) {
+                                            return [
+                                                'inventory_id' => $attribute->inventory_id,
+                                                'attribute_value_id' => $attribute->attribute_value_id,
+                                            ];
+                                        })->toArray(),
+                                    ];
+                                });
+
+                                return $productCollection;
+                            })
+                        );
                     });
+
 
                     // FEATURED BRANDS
                     $featured_brands = Brand::where('featured', Config::get('constants.status.PUBLIC'))

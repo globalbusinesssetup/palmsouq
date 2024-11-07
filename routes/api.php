@@ -709,7 +709,7 @@ Route::group([
     Route::get('localization', [FrontendController::class, "localization"]);
     Route::get('countries-phones', [FrontendController::class, "countriesPhones"]);
 
-   Route::get('/iyzico-redirect', [IyzicoPaymentController::class, 'redirect'])->name('iyzico.redirect');
+    Route::get('/iyzico-redirect', [IyzicoPaymentController::class, 'redirect'])->name('iyzico.redirect');
 
     Route::post('/iyzico-callback', [IyzicoPaymentController::class, 'callback'])
         ->name('iyzico.callback');

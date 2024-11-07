@@ -38,6 +38,7 @@ class ProductCollection extends Model
                 });
 
             })
+            ->with('product_inventories')
             ->select('collection_with_products.*', 'products.id', 'products.title', 'products.badge',
                 'products.selling', 'products.offered', 'products.slug',
                 'products.image', 'products.review_count', 'products.rating', 'products.shipping_rule_id',

@@ -41,5 +41,17 @@ class CollectionWithProduct extends Model
             ->select(['id', 'title']);
     }
 
+    public function product_inventories()
+    {
+        return $this->hasOneThrough(
+            UpdatedInventory::class,
+            Product::class,
+            'id', // Foreign key on Product table
+            'product_id', // Foreign key on UpdatedInventory table
+            'product_id', // Local key on CollectionWithProduct table
+            'id' // Local key on Product table
+        );
+    }
+
 
 }
