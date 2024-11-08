@@ -53,6 +53,8 @@ class FrontendController extends Controller
             $lang = $request->header('language');
 
             $query = Product::query();
+            $query->with('product_categories', 'product_inventories');
+
             $query = $query->leftJoin('flash_sales', function ($join) {
 
                 $join->on('products.id', '=', 'flash_sale_products.product_id');
@@ -162,7 +164,7 @@ class FrontendController extends Controller
                     ->first();
 
 
-                //$query = $query->where('products.category_id', $category->id);
+                // $query = $query->where('products.category_id', $category->id);
 
                 $query = $query->select('products.id', 'products.title', 'products.slug',
                     'products.badge',

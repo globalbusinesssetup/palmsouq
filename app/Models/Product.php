@@ -116,4 +116,16 @@ class Product extends Model
     {
         return $this->hasOne(Admin::class, 'id', 'admin_id');
     }
+
+    public function getCategoryAttribute()
+    {
+        return $this->product_categories; // This will rename it to `category` in the response
+    }
+
+    public function getInventoryAttribute()
+    {
+        return $this->product_inventories; // This will rename it to `inventory` in the response
+    }
+
+    protected $appends = ['category', 'inventory'];
 }

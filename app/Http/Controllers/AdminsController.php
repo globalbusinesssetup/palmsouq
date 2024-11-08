@@ -63,6 +63,8 @@ class AdminsController extends Controller
 
     public function clearCache(Request $request)
     {
+        ini_set('memory_limit', '100M');
+
         Artisan::call('config:cache');
         Artisan::call('config:clear');
         Artisan::call('route:cache');
