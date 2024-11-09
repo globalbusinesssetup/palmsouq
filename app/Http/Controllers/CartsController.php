@@ -104,7 +104,7 @@ class CartsController extends Controller
 
             $query = $query->with('shipping_place.shipping_rule');
             $query = $query->select('id', 'product_id', 'user_id', 'inventory_id', 'quantity',
-                    'selected', 'shipping_place_id', 'shipping_type');
+                    'selected', 'shipping_place_id', 'shipping_type', 'created_at', 'updated_at');
             $data = $query->get();
 
             return response()->json(new Response($request->token, $data));

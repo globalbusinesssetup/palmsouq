@@ -740,7 +740,8 @@ class OrdersController extends ControllerHelper
                             $join->where('pl.lang', $lang);
                         })
                             ->select(['products.id', 'pl.title', 'products.slug', 'products.image', 'products.selling',
-                                'products.offered', 'products.shipping_rule_id', 'products.bundle_deal_id', 'pl.unit']);
+                                'products.offered', 'products.shipping_rule_id', 'products.bundle_deal_id', 'pl.unit',
+                                'products.created_at', 'products.updated_at']);
 
                     }]);
 
@@ -823,7 +824,8 @@ class OrdersController extends ControllerHelper
                             $join->where('pl.lang', $lang);
                         })
                             ->select('products.id', 'pl.title', 'products.slug', 'products.image', 'products.selling',
-                                'products.offered', 'products.shipping_rule_id', 'products.bundle_deal_id', 'pl.unit');
+                                'products.offered', 'products.shipping_rule_id', 'products.bundle_deal_id', 'pl.unit', 
+                                'products.created_at', 'products.updated_at');
 
 
                     }]);
