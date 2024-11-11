@@ -1027,6 +1027,23 @@ class Validation
             return self::validationMessage($request, $rules, $errorType);
         }
     }
+
+    public static function avatar($request, $errorType = 'avatar')
+    {
+        // Check the environment configuration for media storage
+        if (env('MEDIA_STORAGE') == config('env.media.URL')) {
+            // Require either 'photo' or 'banner' to be present
+            $rules = [
+                'avatar' => 'required', 
+            ];
+            return self::validationMessage($request, $rules, $errorType);
+        } else {
+            // Add 'photo' or 'banner' validation
+            $rules['avatar'] = 'required'; 
+            
+            return self::validationMessage($request, $rules, $errorType);
+        }
+    }
     
 
     public static function video($request, $errorType = 'video')

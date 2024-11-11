@@ -912,4 +912,49 @@ class UsersController extends ControllerHelper
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
+    public function upload(Request $request, $id)
+    {
+        try {
+            $lang = $request->header('language');
+
+            // Validation for avatar image
+            $validate = Validation::avatar($request);
+            if ($validate) {
+                return response()->json($validate);
+            }
+
+            // Check if 'avatar' is present in the request
+            if ($request->hasFile('avatar')) {
+                // Upload 'avatar' to the 'avatar' field
+                $image_info = FileHelper::uploadImage($request->file('avatar'), 'avatar'); // Folder 'avatar'
+                $avatar_name = $image_info['name'];
+            } else {
+                return response()->json(['error' => 'No avatar uploaded'], 400); // Return error if avatar is not uploaded
+            }
+
+            // Check if the user exists with the given $id
+            $user = User::find($id);
+            if (is_null($user)) {
+                return response()->json(['error' => 'User not found'], 400); // Return bad request if user not found
+            }
+
+            // Delete previous avatar if exists
+            $old_avatar = $user->avatar;
+            
+            // Update user's avatar field directly
+            $user->avatar = $avatar_name;
+            if ($user->save()) {
+                FileHelper::deleteFile($old_avatar); // Delete old avatar after updating
+            }
+
+            // Fetch updated user data
+            $data = User::find($id);
+
+            return response()->json(new Response($request->token, $data));
+
+        } catch (\Exception $ex) {
+            return response()->json(Validation::error($request->token, $ex->getMessage()));
+        }
+    }
 }

@@ -806,7 +806,7 @@ Route::group([
 
             Route::post('update-profile', [UsersController::class, "updateProfile"]);
             Route::post('update-user-password', [UsersController::class, "updateUserPassword"]);
-
+            Route::post('{id}/avatar', [UsersController::class, "upload"]);
 
             Route::group([
                 'prefix' => 'compare-list',
