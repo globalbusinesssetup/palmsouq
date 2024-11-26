@@ -36,10 +36,14 @@ class ProductsExport implements FromCollection, WithHeadings
             'b.title as brand',
             'sr.title as shipping_rule',
             'bd.title as bundle_deal',
-            'products.purchased',
+            'products.stock',
             'products.selling',
             'products.offered',
             'products.status',
+            'products.sku',
+            'products.barcode',
+            'products.supplier_item_code',
+            'products.banner_image',
             'products.id'
         ];
 
@@ -215,7 +219,7 @@ class ProductsExport implements FromCollection, WithHeadings
                 array_push($inventories, $inv);
 
             }
-            $i['inventories'] = json_encode($inventories);
+            // $i['inventories'] = json_encode($inventories);
 
 
 
@@ -285,15 +289,19 @@ class ProductsExport implements FromCollection, WithHeadings
             'Brand',
             'Shipping rule',
             'Bundle deal',
-            'Purchased',
+            'Stock',
             'Selling',
             'Offered',
             'Status',
+            'Sku',
+            'Barcode',
+            'Supplier Item Code',
+            'Banner',
             'Id',
             'Collections',
             'Categories',
-            'Inventories',
-            'Images',
+            // 'Inventories',
+            'Images'
         ];
     }
 }

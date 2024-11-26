@@ -157,7 +157,7 @@ class ProductsImport implements ToCollection
         // Process the data as needed
         foreach ($data as $row) {
 
-            if (count($row) != 27) {
+            if (count($row) != 30) {
                 throw new \Exception(__('lang.invalid_bulk', [], $lang));
             }
 
@@ -302,6 +302,11 @@ class ProductsImport implements ToCollection
                 $productImageName = Utils::copyImageFromUrl($productImageName, 'product');
             }
 
+            $productBannerName = trim($row[25]);
+            if(Utils::isUploadable($productImageName)) {
+                $productBannerName = Utils::copyImageFromUrl($productImageName, 'product');
+            }
+
 
             $productVideoName = trim($row[8]);
             if(Utils::isUploadable($productVideoName)) {
@@ -328,14 +333,18 @@ class ProductsImport implements ToCollection
                 'brand_id' => trim($row[15]) == '' ? null : $brandsArr[trim($row[15])],
                 'shipping_rule_id' => $shippingRulesArr[trim($row[16])],
                 'bundle_deal_id' => trim($row[17]) == '' ? null : $bundleDealsArr[trim($row[17])],
-                'purchased' => $row[18],
+                'stock' => $row[18],
                 'selling' => $row[19],
                 'offered' => $row[20],
                 'status' => $row[21],
+                'sku' => $row[22],
+                'barcode' => $row[23],
+                'supplier_item_code' => $row[24],
+                'banner_image' => $productBannerName,
                 'admin_id' => $adminId
             ];
 
-            if (trim($row[22])) {
+            if (trim($row[26])) {
 
                 $updateArr = [];
                 if ($lang) {
@@ -346,17 +355,17 @@ class ProductsImport implements ToCollection
                     $updateArr = array_merge($prodData, $pArr);
                 }
 
-                $existingProd = Product::where('id', trim($row[22]))->first();
+                $existingProd = Product::where('id', trim($row[26]))->first();
 
                 if ($existingProd) {
                     if (trim($row[12]) == '') {
                         unset($updateArr['slug']);
                     }
 
-                    Product::where('id', trim($row[22]))->update($updateArr);
+                    Product::where('id', trim($row[26]))->update($updateArr);
 
                     $prod = new Product();
-                    $prod->id = trim($row[22]);
+                    $prod->id = trim($row[26]);
 
                 } else {
                     $prod = Product::create(array_merge($prodData, $pArr));
@@ -390,7 +399,7 @@ class ProductsImport implements ToCollection
                     ProductLang::create($pLangArr);
                 }
 
-                $pcs = explode(',', trim($row[23]));
+                $pcs = explode(',', trim($row[27]));
 
                 foreach ($pcs as $jk) {
                     if (trim($jk) == '') continue;
@@ -422,7 +431,7 @@ class ProductsImport implements ToCollection
 
             } else {
 
-                $pcs = explode(',', trim($row[23]));
+                $pcs = explode(',', trim($row[27]));
 
                 foreach ($pcs as $jk) {
                     if (trim($jk) == '') continue;
@@ -456,7 +465,7 @@ class ProductsImport implements ToCollection
             }
 
 
-            $categories = explode(',', $row[24]);
+            $categories = explode(',', $row[28]);
 
             foreach ($categories as $key => $c) {
                 if (trim($c) == '') continue;
@@ -507,222 +516,37 @@ class ProductsImport implements ToCollection
 
 
             try {
-
-                $inventories = json_decode(trim($row[25]));
-
-
-                foreach ($inventories as $inv) {
-
-
-                    if (trim($inv->attributes) == '') {
-
-                        $existingInv = UpdatedInventory::with('inventory_attributes')
-                            ->where('product_id', $prod->id)
-                            ->get();
-
-
-                        if (count($existingInv) == 1 && count($existingInv[0]->inventory_attributes) == 0) {
-
-
-                            UpdatedInventory::where('id', $existingInv[0]->id)->update([
-                                'sku' => $inv->sku,
-                                'quantity' => $inv->quantity,
-                                'price' => $inv->price
-                            ]);
-
-
-                        } else {
-
-                            foreach ($existingInv as $ei) {
-                                InventoryAttribute::where('inventory_id', $ei->id)->delete();
-                                UpdatedInventory::where('id', $ei->id)->delete();
-                            }
-
-                            UpdatedInventory::create([
-                                'product_id' => $prod->id,
-                                'sku' => $inv->sku,
-                                'quantity' => $inv->quantity,
-                                'price' => $inv->price
-                            ]);
-                        }
-
-
-                    } else {
-
-
-                        $attrParts = explode('+', $inv->attributes);
-
-
-                        $existingAttrInv = [];
-
-                        foreach ($attrParts as $atr) {
-
-                            if (trim($atr) == "") continue;
-
-
-                            /*For new attribute start*/
-                            if (!key_exists(trim($atr), $attrValuesArr)) {
-                                if ($lang) {
-
-                                    $attri = Attribute::create([
-                                        'admin_id' => $adminId,
-                                        'title' => "",
-                                    ]);
-
-                                    $av = AttributeValue::create([
-                                        'attribute_id' => $attri->id,
-                                        'admin_id' => $adminId,
-                                        'title' => "",
-                                    ]);
-
-                                    AttributeValueLang::create([
-                                        'attribute_value_id' => $av->id, 'title' => trim($atr), 'lang' => $lang
-                                    ]);
-
-                                    $attrValuesArr[trim($atr)] = $av->id;
-
-                                } else {
-
-                                    $attri = Attribute::create([
-                                        'admin_id' => $adminId,
-                                        'title' => "",
-                                    ]);
-
-                                    $av = AttributeValue::create([
-                                        'attribute_id' => $attri->id,
-                                        'admin_id' => $adminId,
-                                        'title' => trim($atr),
-                                    ]);
-
-                                    $attrValuesArr[trim($atr)] = $av->id;
-                                }
-                            }
-                            /*For new attribute end*/
-
-                            $invAttr = InventoryAttribute::where('attribute_value_id', $attrValuesArr[trim($atr)])
-                                ->get();
-
-                            $existingAttrInv[trim($atr)] = [];
-                            foreach ($invAttr as $ia) {
-
-                                array_push($existingAttrInv[trim($atr)], $ia->inventory_id);
-
-                            }
-                        }
-
-
-                        $invArrays = [];
-                        foreach ($existingAttrInv as $ia) {
-
-                            array_push($invArrays, $ia);
-
-                        }
-
-
-                        $existingInventories = Utils::findCommonElements($invArrays);
-
-                        $existingInv = UpdatedInventory::whereIn('id', $existingInventories)
-                            ->where('product_id', $prod->id)->first();
-
-
-                        if (is_null($existingInv)) {
-                            $iv = UpdatedInventory::create([
-                                'product_id' => $prod->id,
-                                'sku' => $inv->sku,
-                                'quantity' => $inv->quantity,
-                                'price' => $inv->price
-
-                            ]);
-
-                            foreach ($attrParts as $atr) {
-
-                                if (trim($atr) == "") continue;
-
-                                InventoryAttribute::create([
-                                    'inventory_id' => $iv->id,
-                                    'attribute_value_id' => $attrValuesArr[trim($atr)]
-
-                                ]);
-                            }
-                        } else {
-                            UpdatedInventory::where('product_id', $prod->id)
-                                ->where('id', $existingInv->id)
-                                ->update([
-                                    'sku' => $inv->sku,
-                                    'quantity' => $inv->quantity,
-                                    'price' => $inv->price
-                                ]);
-
-                        }
-
-
-                    }
-
+                // Read the fields directly from the row
+                $sku = trim($row[22]); // SKU field
+                $quantity = trim($row[18]); // Quantity field
+                $price = trim($row[20]) ?: trim($row[19]); // Price field
+            
+                // Check if an inventory record already exists for this product and SKU
+                $existingInv = UpdatedInventory::where('product_id', $prod->id)
+                    ->where('sku', $sku)
+                    ->first();
+            
+                if ($existingInv) {
+                    // Update the existing inventory
+                    $existingInv->update([
+                        'quantity' => $quantity,
+                        'price' => $price
+                    ]);
+                } else {
+                    // Create a new inventory
+                    UpdatedInventory::create([
+                        'product_id' => $prod->id,
+                        'sku' => $sku,
+                        'quantity' => $quantity,
+                        'price' => $price
+                    ]);
                 }
-
             } catch (\Exception $ex) {
                 throw new \Exception('Error in inventory row. ' . $ex->getMessage());
             }
 
 
-            /*foreach ($inventories as $iv) {
-
-                $inventoriesParts = explode('=>', $iv);
-
-
-                if (count($inventoriesParts) === 2 && trim($inventoriesParts[1])) {
-
-
-
-
-                    $inventoriesPriceQty = explode('/', trim($inventoriesParts[1]));
-
-                    if (count($inventoriesPriceQty) == 2) {
-
-
-                        if($prod->id){
-                            $existingInv = UpdatedInventory::where('product_id', $prod->id)->get();
-
-                            foreach($existingInv as $ei){
-                                $op = OrderedProduct::where('inventory_id', $ei->id)->first();
-
-                                if($op){
-                                    throw new \Exception( "Ordered product is using this inventory. Or delete the order. Please make the row empty of 'Inventories' row");
-                                }
-                                Cart::where('inventory_id', $ei->id)->delete();
-                                InventoryAttribute::where('inventory_id', $ei->id)->delete();
-                                UpdatedInventory::where('id', $ei->id)->delete();
-                            }
-                        }
-
-
-                        $inv = UpdatedInventory::create([
-                            'product_id' => $prod->id,
-                            'quantity' => trim($inventoriesPriceQty[1]),
-                            'price' => trim($inventoriesPriceQty[0])
-                        ]);
-
-                        if (trim($inventoriesParts[0])) {
-                            $inventoriesAttr = explode('+', trim($inventoriesParts[0]));
-
-
-                            foreach ($inventoriesAttr as $ivAttr) {
-
-                                if (trim($ivAttr) && key_exists(trim($ivAttr), $attrValuesArr)) {
-
-                                    InventoryAttribute::create([
-                                        'inventory_id' => $inv->id,
-                                        'attribute_value_id' => $attrValuesArr[trim($ivAttr)]
-                                    ]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }*/
-
-
-            $images = json_decode($row[26]);
+            $images = json_decode($row[29]);
             if($images && count($images) > 0){
                 foreach ($images as $img) {
 
