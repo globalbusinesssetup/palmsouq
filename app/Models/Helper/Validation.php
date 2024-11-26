@@ -175,7 +175,7 @@ class Validation
         $rules = [
             'country' => 'required|min:2|max:2',
             'city' => 'required',
-            'zip' => 'required',
+            // 'zip' => 'required',
             'address_1' => 'required',
             'email' => 'required',
             'name' => 'required',
