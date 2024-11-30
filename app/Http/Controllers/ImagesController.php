@@ -15,42 +15,47 @@ use Stripe\File;
 class ImagesController extends ControllerHelper
 {
     public function all(Request $request)
-{
-    try {
-        if ($can = Utils::userCan($this->user, 'bulk_upload.view')) {
-            return $can;
-        }
+    {
+        try {
+            if ($can = Utils::userCan($this->user, 'bulk_upload.view')) {
+                return $can;
+            }
 
-        $lang = $request->header('language');
-        $files = [];
-        $excludeKeywords = ['product', 'brand', 'category', 'thumb'];
+            $lang = $request->header('language');
+            $files = [];
+            $excludeKeywords = [
+                'product', 
+                'brand', 
+                'category', 
+                'thumb'
+            ];
 
-        if (config('env.media.STORAGE') == config('env.media.LOCAL')) {
-            $directoryPath = FileHelper::getUploadPath();
-            $allFiles = Utils::scanDir($directoryPath); // Scan all files in the directory
+            if (config('env.media.STORAGE') == config('env.media.LOCAL')) {
+                $directoryPath = FileHelper::getUploadPath();
+                $allFiles = Utils::scanDir($directoryPath); // Scan all files in the directory
 
-            // Filter files to exclude keywords
-            $files = array_filter($allFiles, function ($file) use ($excludeKeywords) {
-                foreach ($excludeKeywords as $keyword) {
-                    if (Str::contains(strtolower($file), strtolower($keyword))) {
-                        return false;
+                // Filter files to exclude keywords
+                $files = array_filter($allFiles, function ($file) use ($excludeKeywords) {
+                    foreach ($excludeKeywords as $keyword) {
+                        if (Str::contains(strtolower($file), strtolower($keyword))) {
+                            return false;
+                        }
                     }
-                }
-                return true;
-            });
-        } else if (config('env.media.STORAGE') == config('env.media.GCS')) {
-            $files = FileHelper::readAllFileGcs(); // For GCS storage
+                    return true;
+                });
+            } else if (config('env.media.STORAGE') == config('env.media.GCS')) {
+                $files = FileHelper::readAllFileGcs(); // For GCS storage
+            }
+
+            // Merge filtered files (if needed for additional processing)
+            $test = array_merge($files, []);
+
+            // Return the response
+            return response()->json(new Response($request->token, $test));
+        } catch (\Exception $ex) {
+            return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
-
-        // Merge filtered files (if needed for additional processing)
-        $test = array_merge($files, []);
-
-        // Return the response
-        return response()->json(new Response($request->token, $test));
-    } catch (\Exception $ex) {
-        return response()->json(Validation::error($request->token, $ex->getMessage()));
     }
-}
 
 
 

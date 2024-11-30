@@ -124,7 +124,6 @@ class ProductsController extends ControllerHelper
                     'products.selling', 'products.offered', 'products.status',
                     'products.created_at');
 
-
                 if ($request->q) {
                     $query = $query->where('products.title', 'LIKE', "%{$request->q}%");
                 }
