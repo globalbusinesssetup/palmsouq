@@ -63,16 +63,29 @@ class AdminsController extends Controller
 
     public function clearCache(Request $request)
     {
-        ini_set('memory_limit', '100M');
+        try {
+            ini_set('memory_limit', '512M');
 
-        Artisan::call('config:cache');
-        Artisan::call('config:clear');
-        Artisan::call('route:cache');
-        Artisan::call('route:clear');
-        Artisan::call('cache:clear');
-        Artisan::call('optimize');
-        return response()->json(new Response($request->token, true));
+            $commands = [
+                'config:clear',
+                'route:clear',
+                'cache:clear',
+                'config:cache',
+                'route:cache',
+                'optimize',
+            ];
+
+            $outputs = [];
+            foreach ($commands as $command) {
+                Artisan::call($command);
+                $outputs[$command] = Artisan::output();
+            }
+            return response()->json(new Response($request->token, $outputs));
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
+
 
 
     public function statistic(Request $request)
