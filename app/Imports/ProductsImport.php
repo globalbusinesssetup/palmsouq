@@ -156,6 +156,11 @@ class ProductsImport implements ToCollection
 
         // Process the data as needed
         foreach ($data as $row) {
+            
+            // skip rows doesn't contains title
+            // if (!isset($row['title']) || empty($row['title'])) {
+            //     continue;
+            // }
 
             if (count($row) != 30) {
                 throw new \Exception(__('lang.invalid_bulk', [], $lang));
