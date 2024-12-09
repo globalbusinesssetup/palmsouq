@@ -754,6 +754,7 @@ Route::group([
         Route::post('payment-done', [OrdersController::class, 'paymentDone']);
         Route::post('transaction', [OrdersController::class, 'transaction']);
         Route::get('send-order-email/{id}', [OrdersController::class, 'sendOrderEmail']);
+        Route::get('find/{id}', [OrdersController::class, 'find']);
     });
 
 

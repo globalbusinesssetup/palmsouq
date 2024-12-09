@@ -1027,6 +1027,22 @@ class Validation
             return self::validationMessage($request, $rules, $errorType);
         }
     }
+    public static function bulk_image_upload($request, $errorType = 'image')
+    {
+        // Check the environment configuration for media storage
+        if (env('MEDIA_STORAGE') == config('env.media.URL')) {
+            // Allow only image files (jpeg, png, jpg, gif) and max 10MB per file
+            $rules['images'] = 'required|array|max:250'; // You can also limit the number of files, e.g., max 250
+            $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif|max:10240'; // 10MB per image, and only image files allowed
+        } else {
+            // Same validation logic for the else case
+            $rules['images'] = 'required|array|max:250';
+            $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif|max:10240'; // Same rules for images
+        }
+
+        return self::validationMessage($request, $rules, $errorType);
+    }
+
 
     public static function avatar($request, $errorType = 'avatar')
     {

@@ -391,159 +391,74 @@ class OrdersController extends ControllerHelper
     {
         try {
 
+            $token = $request->header('Authorization');
+            \Log::info('Authorization Token:', ['user' => $request->user('user')->id]);
+
+            if (!$request->user('user')) {
+                \Log::info('User:', ['user' => $request->user('user')]);
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
             $lang = $request->header('language');
-
-
-            if ($can = Utils::userCan($this->user, 'order.view')) {
-                return $can;
-            }
-
-            $adminId = $this->user->id;
-
-
+            $adminId = $request->user('user')->id;
+            
+            // Query for the order
             $query = Order::query();
-            $query = $query->with('cancellation');
-            $query = $query->with('address');
-            $query = $query->with('user');
-            $query = $query->with('guest_user');
-
-            $query = $query->with('ordered_products.shipping_place');
-
-
-            if ($lang) {
-
-
-                if (!$this->isSuperAdmin) {
-
-
-                    $query = $query->with(['ordered_products.product' => function ($query) use ($lang) {
-                        $query->where('products.admin_id', $adminId)
-                            ->leftJoin('product_langs as pl',
-                                function ($join) use ($lang) {
-                                    $join->on('products.id', '=', 'pl.product_id');
-                                    $join->where('pl.lang', $lang);
-                                })
-                            ->select('products.id', 'products.title', 'products.image', 'products.selling',
-                                'products.offered', 'products.shipping_rule_id',
-                                'products.bundle_deal_id', 'products.unit', 'pl.title');
-                    }]);
-
-
-                } else {
-                    $query = $query->with(['ordered_products.product' => function ($query) use ($lang) {
-                        $query->leftJoin('product_langs as pl',
-                            function ($join) use ($lang) {
-                                $join->on('products.id', '=', 'pl.product_id');
-                                $join->where('pl.lang', $lang);
-                            })
-                            ->select('products.id', 'products.title', 'products.image', 'products.selling',
-                                'products.offered', 'products.shipping_rule_id',
-                                'products.bundle_deal_id', 'products.unit', 'pl.title');
-                    }]);
-
-                }
-
-
-                $query = $query->with(['voucher' => function ($query) use ($lang) {
-                    $query->leftJoin('voucher_langs as vl',
-                        function ($join) use ($lang) {
-                            $join->on('vouchers.id', '=', 'vl.voucher_id');
-                            $join->where('vl.lang', $lang);
-                        })
-                        ->select('vouchers.*', 'vl.title');
-                }]);
-
-
-                $query = $query->with(['ordered_products.updated_inventory.inventory_attributes.attribute_value' =>
-                    function ($query) use ($lang) {
-                        $query->leftJoin('attribute_value_langs as avl',
-                            function ($join) use ($lang) {
-                                $join->on('attribute_values.id', '=', 'avl.attribute_value_id');
-                                $join->where('avl.lang', $lang);
-                            })
-                            ->with(['attribute' => function ($query) use ($lang) {
-
-                                $query->leftJoin('attribute_langs as al',
-                                    function ($join) use ($lang) {
-                                        $join->on('attributes.id', '=', 'al.attribute_id');
-                                        $join->where('al.lang', $lang);
-                                    })
-                                    ->select('attributes.id', 'attributes.title', 'al.title');
-                            }])
-                            ->leftJoin('product_image_attributes as pia', function ($join) {
-                                $join->on('attribute_values.id', '=', 'pia.attribute_value_id')
-                                    ->leftJoin('product_images as pi', function ($join) {
-                                        $join->on('pi.id', '=', 'pia.product_image_id');
-                                    });
-                            })
-                            ->select('attribute_values.*', 'avl.title', 'pia.product_image_id', 'pi.image');
-                    }]);
-
-
-            } else {
-
-
-                if (!$this->isSuperAdmin) {
-
-                    $query = $query->with(['ordered_products.product' => function ($subQuery) use ($adminId) {
-                        $subQuery->where('products.admin_id', $adminId)
-                            ->select('products.id', 'products.title', 'products.image', 'products.selling',
-                                'products.offered', 'products.shipping_rule_id',
-                                'products.bundle_deal_id', 'products.unit', 'products.title');
-                    }]);
-
-
-                } else {
-                    $query = $query->with('ordered_products.product');
-                }
-
-
-                $query = $query->with('voucher')
-                    ->with('ordered_products.updated_inventory.inventory_attributes.attribute_value.attribute');
-
-
-                $query = $query->with(['ordered_products.updated_inventory.inventory_attributes.attribute_value' => function ($query) {
-                    $query->leftJoin('product_image_attributes as pia', function ($join) {
-                        $join->on('attribute_values.id', '=', 'pia.attribute_value_id')
-                            ->leftJoin('product_images as pi', function ($join) {
-                                $join->on('pi.id', '=', 'pia.product_image_id');
-                            });
-                    })
-                        ->select('attribute_values.*', 'pia.product_image_id', 'pi.image');
-                }]);
-            }
-
-
-            if (!$this->isSuperAdmin) {
-
-
-                $query = $query->whereHas('ordered_products.product', function ($query) use ($adminId) {
-                    $query->where('admin_id', $adminId);
-                });
-
-
-            }
-
+            $query = $query->with([
+                'cancellation', 
+                'address', 
+                'user', 
+                'guest_user', 
+                'ordered_products.shipping_place',
+            ]);
 
             $order = $query->find($id);
 
             if (is_null($order)) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+
+            // if ($lang) {
+            //     $query = $this->applyLangSpecificRelations($query, $lang, $adminId);
+            // } else {
+            //     $query = $this->applyDefaultRelations($query, $adminId);
+            // }
+
+            // Add ownership check for authenticated users
+            if (!$this->isSuperAdmin) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('id', $request->user('user')->id);
+                });
+            }
+            
+
+            // Find the order
+            $order = $query->find($id);
+
+            // Check if the order exists
+            if (is_null($order)) {
                 return response()->json(Validation::nothingFoundLang($lang));
             }
 
+            // Ensure ownership for non-admin users
+            if (!$this->isSuperAdmin && $order->user_id !== $request->user('user')->id) {
+                return response()->json(Validation::error($request->token, 'Unauthorized access to this order.'), 403);
+            }
+
+            // Process order details
             $order['calculated'] = Utils::calcPrice($order);
 
-
             $orderedProducts = [];
-            foreach ($order->ordered_products as $j) {
-                if ($j->product) {
-                    array_push($orderedProducts, $j);
+            foreach ($order->ordered_products as $product) {
+                if ($product->product) {
+                    array_push($orderedProducts, $product);
                 }
             }
-            unset($order['ordered_products']);
+
             $order['ordered_products'] = $orderedProducts;
 
-
+            // Format created_at with timezone
             if ($request->time_zone) {
                 $order['created'] = Utils::formatDate(Utils::convertTimeToUSERzone($order->created_at, $request->time_zone));
             } else {
@@ -551,12 +466,12 @@ class OrdersController extends ControllerHelper
             }
 
             return response()->json(new Response($request->token, $order));
-
-
         } catch (\Exception $ex) {
+            \Log::info('No user found in request', $ex);
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
 
 
     public function updatePaymentStatus(Request $request)

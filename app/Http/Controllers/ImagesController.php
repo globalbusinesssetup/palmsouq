@@ -62,10 +62,19 @@ class ImagesController extends ControllerHelper
 
     public function upload(Request $request)
     {
+        ini_set('max_file_uploads', 250);
         try {
+            $validator = Validation::bulk_image_upload($request, 'images');
+            if ($validator) {
+                return response()->json($validator, 400);
+            }
+            
+
             if ($can = Utils::userCan($this->user, 'bulk_upload.edit')) {
                 return $can;
             }
+
+             // Optional for large uploads
 
             $images = [];
             $lang = $request->header('language');
