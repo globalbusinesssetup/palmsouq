@@ -391,11 +391,7 @@ class OrdersController extends ControllerHelper
     {
         try {
 
-            $token = $request->header('Authorization');
-            \Log::info('Authorization Token:', ['user' => $request->user('user')->id]);
-
             if (!$request->user('user')) {
-                \Log::info('User:', ['user' => $request->user('user')]);
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
 
@@ -435,14 +431,14 @@ class OrdersController extends ControllerHelper
 
             // Find the order
             $order = $query->find($id);
-
+            \Log::info('Request Data:', ['order' => $order]);
             // Check if the order exists
             if (is_null($order)) {
                 return response()->json(Validation::nothingFoundLang($lang));
             }
 
             // Ensure ownership for non-admin users
-            if (!$this->isSuperAdmin && $order->user_id !== $request->user('user')->id) {
+            if (!$this->isSuperAdmin && (int)$order->user_id !== (int)$request->user('user')->id) {
                 return response()->json(Validation::error($request->token, 'Unauthorized access to this order.'), 403);
             }
 
@@ -467,7 +463,6 @@ class OrdersController extends ControllerHelper
 
             return response()->json(new Response($request->token, $order));
         } catch (\Exception $ex) {
-            \Log::info('No user found in request', $ex);
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }

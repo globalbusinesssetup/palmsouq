@@ -225,12 +225,12 @@ class FileHelper
     }
 
 
-    public static function uploadImage($file, $prefix, $thumb = true)
+    public static function uploadImage($file, $prefix, $thumb = true, $original_name = false)
     {
         try {
 
             if (config('env.media.STORAGE') == config('env.media.LOCAL')) {
-                return self::uploadToLocal($file, $prefix, $thumb);
+                return self::uploadToLocal($file, $prefix, $thumb, $original_name);
 
             } else if (config('env.media.STORAGE') == config('env.media.GCS')) {
                 return self::uploadToGcs($file, $prefix, $thumb);
@@ -305,13 +305,18 @@ class FileHelper
 
     }
 
-    public static function uploadToLocal($file, $prefix, $thumb = true)
+    public static function uploadToLocal($file, $prefix, $thumb = true, $original_name)
     {
+        try {
 
-        try{
             $extension = $file->getClientOriginalExtension();
-            $filename = $prefix . '-' . time() . '-' . mt_rand(1, 9) . '.' . $extension;
 
+            if ($original_name) {
+                $filename = $prefix . '.' . $extension;
+            }else{
+                $filename = $prefix . '-' . time() . '-' . mt_rand(1, 9) . '.' . $extension;
+            }
+            \Log::info('Request Data:', ['file_name' => $original_name]);
             if ($thumb) {
                 self::generateThumbLocal($file, $filename);
             }
@@ -325,7 +330,6 @@ class FileHelper
             throw $ex;
         }
     }
-
 
     public static function generateThumbLocal($file, $filename)
     {

@@ -62,9 +62,10 @@ class ImagesController extends ControllerHelper
 
     public function upload(Request $request)
     {
-        ini_set('max_file_uploads', 250);
         try {
+            
             $validator = Validation::bulk_image_upload($request, 'images');
+
             if ($validator) {
                 return response()->json($validator, 400);
             }
@@ -91,7 +92,7 @@ class ImagesController extends ControllerHelper
                     }
 
                     // Call the uploadImage method with the original filename
-                    $image_info = FileHelper::uploadImage($img, pathinfo($img->getClientOriginalName(), PATHINFO_FILENAME));
+                    $image_info = FileHelper::uploadImage($img, pathinfo($img->getClientOriginalName(), PATHINFO_FILENAME), true, true);
 
                     array_push($images, $image_info);
                 }
