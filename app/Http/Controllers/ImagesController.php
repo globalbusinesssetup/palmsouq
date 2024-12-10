@@ -27,7 +27,14 @@ class ImagesController extends ControllerHelper
                 'product', 
                 'brand', 
                 'category', 
-                'thumb'
+                'thumb',
+                'slider',
+                'banner',
+                'logo',
+                'avatar',
+                'favicon',
+                'default',
+                'description'
             ];
 
             if (config('env.media.STORAGE') == config('env.media.LOCAL')) {
@@ -81,6 +88,7 @@ class ImagesController extends ControllerHelper
             $lang = $request->header('language');
 
             if ($request->hasFile('images')) {
+                
                 if (count($request->images) > Config::get('constants.media.MAX_IMG_UPLOAD')) {
                     return response()->json(Validation::error($request->token, __('lang.multi_img', [], $lang), 'multiple_image'));
                 }

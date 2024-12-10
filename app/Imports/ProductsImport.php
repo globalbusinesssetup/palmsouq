@@ -166,20 +166,19 @@ class ProductsImport implements ToCollection
                 throw new \Exception(__('lang.invalid_bulk', [], $lang));
             }
 
-            $slug = $row[12];
-
-            if(trim($row[22]) == "") {
-                if(trim($slug) == ''){
+            $slug = isset($row[12]) ? trim($row[12]) : null;
+            
+            // generate a slug if doesn't exist
+            if(empty($slug)) {
                     $slug = Str::slug($row[0]);
-                }
-
+            }
+            // generate a unique slug name, if already exist
+            $prod = Product::where('slug', $slug)->first();
+            $count = 1;
+            while ($prod) {
+                $slug = $slug . '-' . $count;
+                $count++;
                 $prod = Product::where('slug', $slug)->first();
-                $count = 1;
-                while ($prod) {
-                    $slug = $slug . '-' . $count;
-                    $count++;
-                    $prod = Product::where('slug', $slug)->first();
-                }
             }
 
 

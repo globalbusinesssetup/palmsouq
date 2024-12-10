@@ -60,7 +60,6 @@ class BulkController extends ControllerHelper
             $file = $request['file'];
 
             $products = new ProductsImport($lang);
-
             \Excel::import($products, $file);
 
             return response()->json(new Response($request->token, true));

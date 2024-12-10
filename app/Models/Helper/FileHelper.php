@@ -49,8 +49,6 @@ class FileHelper
     }
 
 
-
-
     public static function imageLink($image)
     {
         if ($image == 'null' || $image == '' || is_null($image)) {
@@ -59,7 +57,6 @@ class FileHelper
 
         return self::imgSrcUrl() . $image;
     }
-
 
     public static function imageFullUrl($image)
     {
@@ -77,7 +74,6 @@ class FileHelper
 
         return false;
     }
-
 
     public static function imageToBase64($image, $default = true)
     {
@@ -136,7 +132,6 @@ class FileHelper
         }
     }
 
-
     public static function readAllFileGcs()
     {
         try {
@@ -166,7 +161,6 @@ class FileHelper
 
         return true;
     }
-
 
     public static function deleteFileGcs($image)
     {
@@ -198,7 +192,6 @@ class FileHelper
         return true;
     }
 
-
     public static function deleteFileLocal($image)
     {
         try {
@@ -223,7 +216,6 @@ class FileHelper
         }
 
     }
-
 
     public static function uploadImage($file, $prefix, $thumb = true, $original_name = false)
     {
