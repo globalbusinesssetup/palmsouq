@@ -162,15 +162,15 @@ class ProductsImport implements ToCollection
             //     continue;
             // }
 
-            if (count($row) != 30) {
+            if (count($row) != 37) {
                 throw new \Exception(__('lang.invalid_bulk', [], $lang));
             }
 
-            $slug = isset($row[12]) ? trim($row[12]) : null;
+            $slug = isset($row[4]) ? trim($row[4]) : null;
             
             // generate a slug if doesn't exist
             if(empty($slug)) {
-                    $slug = Str::slug($row[0]);
+                    $slug = Str::slug($row[3]);
             }
             // generate a unique slug name, if already exist
             $prod = Product::where('slug', $slug)->first();
@@ -186,7 +186,7 @@ class ProductsImport implements ToCollection
 
             if ($lang) {
 
-                if (!key_exists(trim($row[14]), $taxRulesArr)) {
+                if (!key_exists(trim($row[31]), $taxRulesArr)) {
                     $tr = TaxRules::create([
                         'type' => Config::get('constants.priceType.FLAT'),
                         'admin_id' => $adminId,
@@ -194,40 +194,40 @@ class ProductsImport implements ToCollection
                     ]);
 
                     TaxRuleLang::create([
-                        'tax_rule_id' => $tr->id, 'title' => trim($row[14]), 'lang' => $lang
+                        'tax_rule_id' => $tr->id, 'title' => trim($row[31]), 'lang' => $lang
                     ]);
 
-                    $taxRulesArr[trim($row[14])] = $tr->id;
+                    $taxRulesArr[trim($row[31])] = $tr->id;
                 }
 
 
-                if (!key_exists(trim($row[15]), $brandsArr)) {
+                if (!key_exists(trim($row[1]), $brandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => "",
                     ]);
 
                     BrandLang::create([
-                        'brand_id' => $br->id, 'title' => trim($row[15]), 'lang' => $lang
+                        'brand_id' => $br->id, 'title' => trim($row[1]), 'lang' => $lang
                     ]);
 
-                    $brandsArr[trim($row[15])] = $br->id;
+                    $brandsArr[trim($row[1])] = $br->id;
                 }
 
-                if (!key_exists(trim($row[16]), $shippingRulesArr)) {
+                if (!key_exists(trim($row[32]), $shippingRulesArr)) {
                     $sr = ShippingRule::create([
                         'admin_id' => $adminId,
                         'title' => "",
                     ]);
 
                     ShippingRuleLang::create([
-                        'shipping_rule_id' => $sr->id, 'title' => trim($row[16]), 'lang' => $lang
+                        'shipping_rule_id' => $sr->id, 'title' => trim($row[32]), 'lang' => $lang
                     ]);
 
-                    $shippingRulesArr[trim($row[16])] = $sr->id;
+                    $shippingRulesArr[trim($row[32])] = $sr->id;
                 }
 
-                if (!key_exists(trim($row[17]), $bundleDealsArr)) {
+                if (!key_exists(trim($row[34]), $bundleDealsArr)) {
                     $bd = BundleDeal::create([
                         'admin_id' => $adminId,
                         'title' => "",
@@ -236,10 +236,10 @@ class ProductsImport implements ToCollection
                     ]);
 
                     BundleDealLang::create([
-                        'bundle_deal_id' => $bd->id, 'title' => trim($row[17]), 'lang' => $lang
+                        'bundle_deal_id' => $bd->id, 'title' => trim($row[34]), 'lang' => $lang
                     ]);
 
-                    $bundleDealsArr[trim($row[17])] = $bd->id;
+                    $bundleDealsArr[trim($row[34])] = $bd->id;
                 }
 
                 $prodData = [
@@ -254,35 +254,35 @@ class ProductsImport implements ToCollection
 
             } else {
 
-                if (!key_exists(trim($row[14]), $taxRulesArr)) {
+                if (!key_exists(trim($row[31]), $taxRulesArr)) {
                     $tr = TaxRules::create([
                         'type' => Config::get('constants.priceType.FLAT'),
                         'admin_id' => $adminId,
-                        'title' => trim($row[14])
+                        'title' => trim($row[31])
                     ]);
                     $taxRulesArr[$tr->title] = $tr->id;
                 }
 
-                if (!key_exists(trim($row[15]), $brandsArr)) {
+                if (!key_exists(trim($row[1]), $brandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
-                        'title' => trim($row[15])
+                        'title' => trim($row[1])
                     ]);
                     $brandsArr[$br->title] = $br->id;
                 }
 
-                if (!key_exists(trim($row[16]), $shippingRulesArr)) {
+                if (!key_exists(trim($row[32]), $shippingRulesArr)) {
                     $sr = ShippingRule::create([
                         'admin_id' => $adminId,
-                        'title' => trim($row[16])
+                        'title' => trim($row[32])
                     ]);
                     $shippingRulesArr[$sr->title] = $sr->id;
                 }
 
-                if (!key_exists(trim($row[17]), $bundleDealsArr)) {
+                if (!key_exists(trim($row[34]), $bundleDealsArr)) {
                     $bd = BundleDeal::create([
                         'admin_id' => $adminId,
-                        'title' => trim($row[17]),
+                        'title' => trim($row[34]),
                         'free' => 1,
                         'buy' => 1
                     ]);
@@ -290,35 +290,35 @@ class ProductsImport implements ToCollection
                 }
 
                 $prodData = [
-                    'title' => $row[0],
-                    'badge' => $row[1],
-                    'unit' => $row[2],
-                    'description' => $row[3],
-                    'overview' => $row[4],
-                    'meta_title' => $row[5],
-                    'meta_description' => $row[6],
+                    'title' => $row[3],
+                    'badge' => $row[33],
+                    'unit' => $row[8],
+                    'description' => $row[12],
+                    'overview' => $row[13],
+                    'meta_title' => $row[14],
+                    'meta_description' => $row[15],
                 ];
             }
 
 
-            $productImageName = trim($row[7]);
+            $productImageName = trim($row[19]);
             if(Utils::isUploadable($productImageName)) {
                 $productImageName = Utils::copyImageFromUrl($productImageName, 'product');
             }
 
-            $productBannerName = trim($row[25]);
+            $productBannerName = trim($row[27]);
             if(Utils::isUploadable($productImageName)) {
                 $productBannerName = Utils::copyImageFromUrl($productImageName, 'product');
             }
 
 
-            $productVideoName = trim($row[8]);
+            $productVideoName = trim($row[28]);
             if(Utils::isUploadable($productVideoName)) {
                 $productVideoName = Utils::copyImageFromUrl($productVideoName, 'product');
             }
 
 
-            $productVideoThumb = trim($row[9]);
+            $productVideoThumb = trim($row[29]);
             if(Utils::isUploadable($productVideoThumb)) {
                 $productVideoThumb = Utils::copyImageFromUrl($productVideoThumb, 'product');
             }
@@ -329,26 +329,26 @@ class ProductsImport implements ToCollection
                 'image' => $productImageName,
                 'video' => $productVideoName,
                 'video_thumb' => $productVideoThumb,
-                'warranty' => $row[10],
-                'refundable' => $row[11],
+                'warranty' => $row[17],
+                'refundable' => $row[18],
                 'slug' => $slug,
-                'tags' => $row[13],
-                'tax_rule_id' => $taxRulesArr[trim($row[14])],
-                'brand_id' => trim($row[15]) == '' ? null : $brandsArr[trim($row[15])],
-                'shipping_rule_id' => $shippingRulesArr[trim($row[16])],
-                'bundle_deal_id' => trim($row[17]) == '' ? null : $bundleDealsArr[trim($row[17])],
-                'stock' => $row[18],
-                'selling' => $row[19],
-                'offered' => $row[20],
-                'status' => $row[21],
-                'sku' => $row[22],
-                'barcode' => $row[23],
-                'supplier_item_code' => $row[24],
+                'tags' => $row[30],
+                'tax_rule_id' => $taxRulesArr[trim($row[31])],
+                'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
+                'shipping_rule_id' => $shippingRulesArr[trim($row[32])],
+                'bundle_deal_id' => trim($row[34]) == '' ? null : $bundleDealsArr[trim($row[34])],
+                'stock' => $row[9],
+                'selling' => $row[16],
+                'offered' => $row[10],
+                'status' => $row[11],
+                'sku' => $row[6],
+                'barcode' => $row[7],
+                'supplier_item_code' => $row[5],
                 'banner_image' => $productBannerName,
                 'admin_id' => $adminId
             ];
 
-            if (trim($row[26])) {
+            if (trim($row[36])) {
 
                 $updateArr = [];
                 if ($lang) {
@@ -359,17 +359,17 @@ class ProductsImport implements ToCollection
                     $updateArr = array_merge($prodData, $pArr);
                 }
 
-                $existingProd = Product::where('id', trim($row[26]))->first();
+                $existingProd = Product::where('id', trim($row[36]))->first();
 
                 if ($existingProd) {
-                    if (trim($row[12]) == '') {
+                    if (trim($row[4]) == '') {
                         unset($updateArr['slug']);
                     }
 
-                    Product::where('id', trim($row[26]))->update($updateArr);
+                    Product::where('id', trim($row[36]))->update($updateArr);
 
                     $prod = new Product();
-                    $prod->id = trim($row[26]);
+                    $prod->id = trim($row[36]);
 
                 } else {
                     $prod = Product::create(array_merge($prodData, $pArr));
@@ -438,6 +438,7 @@ class ProductsImport implements ToCollection
                 $pcs = explode(',', trim($row[27]));
 
                 foreach ($pcs as $jk) {
+
                     if (trim($jk) == '') continue;
 
 
@@ -469,7 +470,7 @@ class ProductsImport implements ToCollection
             }
 
 
-            $categories = explode(',', $row[28]);
+            $categories = explode(',', $row[0]);
 
             foreach ($categories as $key => $c) {
                 if (trim($c) == '') continue;
@@ -521,9 +522,9 @@ class ProductsImport implements ToCollection
 
             try {
                 // Read the fields directly from the row
-                $sku = trim($row[22]); // SKU field
-                $quantity = trim($row[18]); // Quantity field
-                $price = trim($row[20]) ?: trim($row[19]); // Price field
+                $sku = trim($row[6]); // SKU field
+                $quantity = trim($row[9]); // Quantity field
+                $price = trim($row[10]) ?: trim($row[16]); // Price field
             
                 // Check if an inventory record already exists for this product and SKU
                 $existingInv = UpdatedInventory::where('product_id', $prod->id)
@@ -549,69 +550,32 @@ class ProductsImport implements ToCollection
                 throw new \Exception('Error in inventory row. ' . $ex->getMessage());
             }
 
-
-            $images = json_decode($row[29]);
-            if($images && count($images) > 0){
+            $images = [$row[20], $row[21], $row[22], $row[23], $row[24], $row[25], $row[26]];
+            $images = array_filter($images);
+            if ($images && count($images) > 0) {
                 foreach ($images as $img) {
 
-                    if(trim($img->image) == '') continue;
+                    $imageName = trim($img);
+                    
+                    if(trim($img) == '') continue;
 
-
-                    $imageName = trim($img->image);
+                    $imageName = trim($img);
                     if(Utils::isUploadable($imageName)) {
                         $imageName = Utils::copyImageFromUrl($imageName, 'product');
                     }
-
                     $existingImg = ProductImage::where('image', $imageName)
                         ->where('product_id', $prod->id)
                         ->where('admin_id', $adminId)
                         ->first();
 
-
-
                     if (!$existingImg) {
-                        $pImg = ProductImage::create([
+                        ProductImage::create([
                             'image' => $imageName,
                             'product_id' => $prod->id,
                             'admin_id' => $adminId
                         ]);
-
-                        if ($img->attributes && count($img->attributes) > 0) {
-                            foreach ($img->attributes as $pImgAttr){
-
-                                if(key_exists(trim($pImgAttr), $attrValuesArr)){
-                                    ProductImageAttribute::create([
-                                        "product_image_id" => $pImg->id,
-                                        "attribute_value_id" => $attrValuesArr[trim($pImgAttr)]
-                                    ]);
-                                }
-                            }
-                        }
-
-                    } else {
-                        if ($img->attributes && count($img->attributes) > 0) {
-
-                            foreach ($img->attributes as $pImgAttr){
-
-                                if(key_exists(trim($pImgAttr), $attrValuesArr)){
-
-                                    $existProdImfAttr = ProductImageAttribute::where("attribute_value_id", $attrValuesArr[trim($pImgAttr)])
-                                        ->where("product_image_id", $existingImg->id)
-                                        ->first();
-
-                                    if(!$existProdImfAttr){
-                                        ProductImageAttribute::create([
-                                            "product_image_id" => $existingImg->id,
-                                            "attribute_value_id" => $attrValuesArr[trim($pImgAttr)]
-                                        ]);
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
-
-
             }
 
 

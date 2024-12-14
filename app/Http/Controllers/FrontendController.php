@@ -1894,7 +1894,6 @@ class FrontendController extends Controller
 
                     $data['category_data'] = $result;
 
-
                     $currentCategories = Category::query();
 
                     if (count($result) > 1) {
@@ -1939,13 +1938,14 @@ class FrontendController extends Controller
                     });
 
                     $query = $query->leftJoin('user_wishlists', function ($join) use ($request) {
-                        $join->on('products.id', '=', 'user_wishlists.product_id');
-                        $join->where('user_wishlists.user_id', $request->user_id);
+                        $join->on('products.id', '=', 'user_wishlists.product_id')
+                             ->where('user_wishlists.user_id', '=', $request->user_id);
                     });
+                    
 
                     $query = $query->select('products.*', 'flash_sale_products.price', 'flash_sales.end_time',
                         'user_wishlists.id as wishlisted');
-
+                        
 
                     $query = $query->where('products.status', Config::get('constants.status.PUBLIC'));
 

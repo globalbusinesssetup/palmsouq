@@ -289,18 +289,19 @@ class MailHelper
 
         $objDemo = new \stdClass();
         $objDemo->code = rand(1000, 9999);
-        $objDemo->receiver = $request->name;
+        $objDemo->receiver = $request->first_name;
 
         $objDemo->address = Utils::formatAddress($setting);
 
         $objDemo->phone = $setting && $setting->phone ? $setting->phone : 'N/A';
         $objDemo->store_name = $siteSetting->site_name;
+        
 
         try {
 
             Mail::send($bladeTemplate, ['data' => $objDemo, 'lang' => $lang],
                 function ($message) use ($request, $subject) {
-                    $message->to($request->email, $request->name)
+                    $message->to($request->email, $request->first_name)
                         ->subject($subject);
 
                 });

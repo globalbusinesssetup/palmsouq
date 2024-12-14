@@ -517,7 +517,7 @@ class UsersController extends ControllerHelper
                 ]);
             }
 
-            return response()->json(new Response(null, $request->email));
+            return response()->json(new Response(null, [$request->email, $request->code]));
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error(null, explode('.', $ex->getMessage())[0]), 500);
@@ -553,12 +553,13 @@ class UsersController extends ControllerHelper
             if ($validator) {
                 return response()->json($validator);
             }
-
+            \Log::info('request',['request' => $request]);
             User::where('id', Auth::user()->id)->update([
-                'first_name' => $request-> first_name
+                'first_name' => $request-> first_name,
+                'last_name' => $request-> last_name
             ]);
 
-            return Validation::success($request, __('lang.profile_updated', [], $lang), ['first_name' => $request-> first_name]);
+            return Validation::success($request, __('lang.profile_updated', [], $lang), ['first_name' => $request-> first_name, 'last_name' => $request-> last_name]);
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage()));
