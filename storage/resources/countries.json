@@ -15798,31 +15798,31 @@
     "states": {
       "AJ": {
         "code": "AJ",
-        "name": "'Ajmān"
+        "name": "Ajman"
       },
       "AZ": {
         "code": "AZ",
-        "name": "Abū Z̧aby"
+        "name": "Abu Dhabi"
       },
       "FU": {
         "code": "FU",
-        "name": "Al Fujayrah"
+        "name": "Fujairah"
       },
       "SH": {
         "code": "SH",
-        "name": "Ash Shāriqah"
+        "name": "Sharjah"
       },
       "DU": {
         "code": "DU",
-        "name": "Dubayy"
+        "name": "Dubai"
       },
       "RK": {
         "code": "RK",
-        "name": "Ra's al Khaymah"
+        "name": "Ras Al Khaimah"
       },
       "UQ": {
         "code": "UQ",
-        "name": "Umm al Qaywayn"
+        "name": "Umm Al Quwain"
       }
     }
   },
