@@ -85,6 +85,21 @@ class Utils
         }
     }
 
+    public static function searchImageInStorage($imageName)
+    {
+        $directory = public_path('uploads');
+        $searchPattern = $directory . '/' . $imageName . '.*'; // Match any extension
+
+        $foundFiles = glob($searchPattern);
+
+        if (!empty($foundFiles)) {
+            // Return the first matching image as a relative path
+            return str_replace(public_path('uploads/'), '', $foundFiles[0]); // Relative path
+        }
+
+        return null; // Image not found
+    }
+
 
     public static function findCommonElements($arrays) {
         if (count($arrays) === 0) {

@@ -304,6 +304,8 @@ class ProductsImport implements ToCollection
             $productImageName = trim($row[19]);
             if(Utils::isUploadable($productImageName)) {
                 $productImageName = Utils::copyImageFromUrl($productImageName, 'product');
+            }else{
+                $productImageName = Utils::searchImageInStorage($productImageName);
             }
 
             $productBannerName = trim($row[27]);
@@ -554,15 +556,20 @@ class ProductsImport implements ToCollection
             $images = array_filter($images);
             if ($images && count($images) > 0) {
                 foreach ($images as $img) {
-
                     $imageName = trim($img);
-                    
-                    if(trim($img) == '') continue;
 
-                    $imageName = trim($img);
-                    if(Utils::isUploadable($imageName)) {
+                    if ($imageName == '') continue;
+
+                    // Check if the image needs to be uploaded or searched in local storage
+                    if (Utils::isUploadable($imageName)) {
                         $imageName = Utils::copyImageFromUrl($imageName, 'product');
+                    } else {
+                        // If the image is local, search for it in the public/uploads directory
+                        $imageName = Utils::searchImageInStorage($imageName);
                     }
+                    \Log::info('imageName', ['image' => $imageName]);
+                    // Check if the image already exists in the database
+                    if($imageName == null) continue;
                     $existingImg = ProductImage::where('image', $imageName)
                         ->where('product_id', $prod->id)
                         ->where('admin_id', $adminId)
@@ -577,7 +584,6 @@ class ProductsImport implements ToCollection
                     }
                 }
             }
-
 
         }
     }

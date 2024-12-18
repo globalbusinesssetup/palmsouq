@@ -517,7 +517,7 @@ class UsersController extends ControllerHelper
                 ]);
             }
 
-            return response()->json(new Response(null, [$request->email, $request->code]));
+            return response()->json(new Response(null, [$request->email]));
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error(null, explode('.', $ex->getMessage())[0]), 500);
