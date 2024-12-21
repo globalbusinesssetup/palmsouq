@@ -25,7 +25,7 @@ class Product extends Model
         'id', 'title', 'purchased', 'selling', 'offered', 'barcode', 'supplier', 'supplier_item_code', 
         'image', 'banner_image', 'unit', 'video', 'video_thumb', 'badge', 'stock', 'sku', 'flash_sale_product',
         'status', 'admin_id', 'subcategory_id', 'category_id', 'brand_id', 'warranty', 'refundable',
-        'description', 'overview', 'tags', 'tax_rule_id', 'shipping_rule_id', 'meta_title', 'meta_description', 'meta_keywords',
+        'description', 'overview', 'specifications', 'weight', 'dimention', 'tags', 'tax_rule_id', 'shipping_rule_id', 'meta_title', 'meta_description', 'meta_keywords',
         'review_count', 'rating', 'bundle_deal_id', 'slug'
     ];
 

@@ -162,7 +162,7 @@ class ProductsImport implements ToCollection
             //     continue;
             // }
 
-            if (count($row) != 37) {
+            if (count($row) != 40) {
                 throw new \Exception(__('lang.invalid_bulk', [], $lang));
             }
 
@@ -248,6 +248,9 @@ class ProductsImport implements ToCollection
                     'unit' => "",
                     'description' => "",
                     'overview' => "",
+                    'specifications' => "",
+                    'weight' => "",
+                    'dimention' => "",
                     'meta_title' => "",
                     'meta_description' => ""
                 ];
@@ -295,32 +298,35 @@ class ProductsImport implements ToCollection
                     'unit' => $row[8],
                     'description' => $row[12],
                     'overview' => $row[13],
-                    'meta_title' => $row[14],
-                    'meta_description' => $row[15],
+                    'specifications' => $row[14],
+                    'weight' => $row[15],
+                    'dimention' => $row[16],
+                    'meta_title' => $row[17],
+                    'meta_description' => $row[18],
                 ];
             }
 
 
-            $productImageName = trim($row[19]);
+            $productImageName = trim($row[22]);
             if(Utils::isUploadable($productImageName)) {
                 $productImageName = Utils::copyImageFromUrl($productImageName, 'product');
             }else{
                 $productImageName = Utils::searchImageInStorage($productImageName);
             }
 
-            $productBannerName = trim($row[27]);
+            $productBannerName = trim($row[30]);
             if(Utils::isUploadable($productImageName)) {
                 $productBannerName = Utils::copyImageFromUrl($productImageName, 'product');
             }
 
 
-            $productVideoName = trim($row[28]);
+            $productVideoName = trim($row[31]);
             if(Utils::isUploadable($productVideoName)) {
                 $productVideoName = Utils::copyImageFromUrl($productVideoName, 'product');
             }
 
 
-            $productVideoThumb = trim($row[29]);
+            $productVideoThumb = trim($row[32]);
             if(Utils::isUploadable($productVideoThumb)) {
                 $productVideoThumb = Utils::copyImageFromUrl($productVideoThumb, 'product');
             }
@@ -331,16 +337,16 @@ class ProductsImport implements ToCollection
                 'image' => $productImageName,
                 'video' => $productVideoName,
                 'video_thumb' => $productVideoThumb,
-                'warranty' => $row[17],
-                'refundable' => $row[18],
+                'warranty' => $row[20],
+                'refundable' => $row[21],
                 'slug' => $slug,
-                'tags' => $row[30],
-                'tax_rule_id' => $taxRulesArr[trim($row[31])],
+                'tags' => $row[33],
+                'tax_rule_id' => $taxRulesArr[trim($row[34])],
                 'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
-                'shipping_rule_id' => $shippingRulesArr[trim($row[32])],
-                'bundle_deal_id' => trim($row[34]) == '' ? null : $bundleDealsArr[trim($row[34])],
+                'shipping_rule_id' => $shippingRulesArr[trim($row[35])],
+                'bundle_deal_id' => trim($row[37]) == '' ? null : $bundleDealsArr[trim($row[34])],
                 'stock' => $row[9],
-                'selling' => $row[16],
+                'selling' => $row[19],
                 'offered' => $row[10],
                 'status' => $row[11],
                 'sku' => $row[6],
@@ -350,7 +356,7 @@ class ProductsImport implements ToCollection
                 'admin_id' => $adminId
             ];
 
-            if (trim($row[36])) {
+            if (trim($row[39])) {
 
                 $updateArr = [];
                 if ($lang) {
@@ -361,17 +367,17 @@ class ProductsImport implements ToCollection
                     $updateArr = array_merge($prodData, $pArr);
                 }
 
-                $existingProd = Product::where('id', trim($row[36]))->first();
+                $existingProd = Product::where('id', trim($row[39]))->first();
 
                 if ($existingProd) {
                     if (trim($row[4]) == '') {
                         unset($updateArr['slug']);
                     }
 
-                    Product::where('id', trim($row[36]))->update($updateArr);
+                    Product::where('id', trim($row[39]))->update($updateArr);
 
                     $prod = new Product();
-                    $prod->id = trim($row[36]);
+                    $prod->id = trim($row[39]);
 
                 } else {
                     $prod = Product::create(array_merge($prodData, $pArr));
@@ -389,13 +395,13 @@ class ProductsImport implements ToCollection
                 $pLangArr = [
                     'product_id' => $prod->id,
                     'lang' => $lang,
-                    'title' => $row[0],
-                    'badge' => $row[1],
-                    'unit' => $row[2],
-                    'description' => $row[3],
-                    'overview' => $row[4],
-                    'meta_title' => $row[5],
-                    'meta_description' => $row[6]
+                    'title' => $row[3],
+                    'badge' => $row[33],
+                    'unit' => $row[8],
+                    'description' => $row[12],
+                    'overview' => $row[13],
+                    'meta_title' => $row[17],
+                    'meta_description' => $row[18],
                 ];
 
                 if ($productLang) {
@@ -437,7 +443,7 @@ class ProductsImport implements ToCollection
 
             } else {
 
-                $pcs = explode(',', trim($row[27]));
+                $pcs = explode(',', trim($row[38]));
 
                 foreach ($pcs as $jk) {
 
@@ -524,9 +530,9 @@ class ProductsImport implements ToCollection
 
             try {
                 // Read the fields directly from the row
-                $sku = trim($row[6]); // SKU field
-                $quantity = trim($row[9]); // Quantity field
-                $price = trim($row[10]) ?: trim($row[16]); // Price field
+                $sku = trim($row[6]);
+                $quantity = trim($row[9]);
+                $price = trim($row[10]) ?: trim($row[19]);
             
                 // Check if an inventory record already exists for this product and SKU
                 $existingInv = UpdatedInventory::where('product_id', $prod->id)
@@ -552,7 +558,7 @@ class ProductsImport implements ToCollection
                 throw new \Exception('Error in inventory row. ' . $ex->getMessage());
             }
 
-            $images = [$row[20], $row[21], $row[22], $row[23], $row[24], $row[25], $row[26]];
+            $images = [$row[22], $row[23], $row[24], $row[25], $row[26], $row[27], $row[28]];
             $images = array_filter($images);
             if ($images && count($images) > 0) {
                 foreach ($images as $img) {

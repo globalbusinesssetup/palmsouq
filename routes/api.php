@@ -88,6 +88,18 @@ Route::get('/clear-cache', function() {
     return "Cache is cleared";
 });
 
+Route::get('/v1/clear-config', function () {
+    try {
+        Artisan::call('config:clear');
+        Log::info('Config cleared successfully.');
+    } catch (\Exception $e) {
+        Log::error('Failed to clear config: ' . $e->getMessage());
+    }
+    
+    return response()->json(['message' => 'Attempted to clear config. Check logs for details.']);
+});
+
+
 
 Route::get('/images', function () {
     // Get the list of all files in the 'public/uploads' directory
