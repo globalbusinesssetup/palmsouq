@@ -755,8 +755,8 @@ class AdminsController extends Controller
             }
 
             $data['img_src_url'] = FileHelper::imgSrcUrl();
-            $data['thumb_prefix'] = env('THUMB_PREFIX');
-            $data['default_image'] = env('DEFAULT_IMAGE');
+            $data['thumb_prefix'] = Config::get('env.media.THUMB_PREFIX');
+            $data['default_image'] = Config::get('env.media.DEFAULT_IMAGE');
 
             return response()->json(new Response($request->token, $data));
 

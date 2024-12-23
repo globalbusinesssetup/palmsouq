@@ -38,16 +38,14 @@ class SettingsController extends ControllerHelper
                 return $can;
             }
 
-            $data['smtpHost'] = env('MAIL_HOST');
-            $data['smtpPort'] = env('MAIL_PORT');
-            $data['smtpUsername'] = env('MAIL_USERNAME');
-            $data['smtpPassword'] = env('MAIL_PASSWORD');
-            $data['smtpEncryption'] = env('MAIL_ENCRYPTION');
-            $data['mailFrom'] = env('MAIL_FROM_ADDRESS');
-
+            $data['smtpHost'] = config('env.mail.MAIL_HOST');
+            $data['smtpPort'] = config('env.mail.MAIL_PORT');
+            $data['smtpUsername'] = config('env.mail.MAIL_USERNAME');
+            $data['smtpPassword'] = config('env.mail.MAIL_PASSWORD');
+            $data['smtpEncryption'] = config('env.mail.MAIL_ENCRYPTION');
+            $data['mailFrom'] = config('env.mail.MAIL_FROM_ADDRESS');
 
             return response()->json(new Response($request->token, $data));
-
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage()));
@@ -58,23 +56,19 @@ class SettingsController extends ControllerHelper
     public function mediaStorageFind(Request $request)
     {
         try {
-
-
             if ($can = Utils::userCan($this->user, 'setting.view')) {
                 return $can;
             }
 
-            $data['mediaStorage'] = env('MEDIA_STORAGE');
-            $data['thumbPrefix'] = env('THUMB_PREFIX');
-            $data['defaultImage'] = env('DEFAULT_IMAGE');
-            $data['cdnUrl'] = env('CDN_URL');
-            $data['gcProjectId'] = env('GOOGLE_CLOUD_PROJECT_ID');
-            $data['gcStorageBucket'] = env('GOOGLE_CLOUD_STORAGE_BUCKET');
-            $data['gcStoragePathPrefix'] = env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX');
-
+            $data['mediaStorage'] = config('env.media.STORAGE');
+            $data['thumbPrefix'] = config('env.media.THUMB_PREFIX');
+            $data['defaultImage'] = config('env.media.DEFAULT_IMAGE');
+            $data['cdnUrl'] = config('env.media.CDN_URL');
+            $data['gcProjectId'] = config('env.google_cloud.PROJECT_ID');
+            $data['gcStorageBucket'] = config('env.google_cloud.STORAGE_BUCKET');
+            $data['gcStoragePathPrefix'] = config('env.google_cloud.STORAGE_PATH_PREFIX');
 
             return response()->json(new Response($request->token, $data));
-
 
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage()));
@@ -97,11 +91,11 @@ class SettingsController extends ControllerHelper
             $data['google_login'] = $setting->google_login;
             $data['facebook_login'] = $setting->facebook_login;
 
-            $data['googleClientId'] = env('GOOGLE_CLIENT_ID');
-            $data['googleClientSecret'] = env('GOOGLE_CLIENT_SECRET');
+            $data['googleClientId'] = config('env.oauth.GOOGLE_CLIENT_ID');
+            $data['googleClientSecret'] = config('env.oauth.GOOGLE_CLIENT_SECRET');
 
-            $data['facebookClientId'] = env('FACEBOOK_CLIENT_ID');
-            $data['facebookClientSecret'] = env('FACEBOOK_CLIENT_SECRET');
+            $data['facebookClientId'] = config('env.oauth.FACEBOOK_CLIENT_ID');
+            $data['facebookClientSecret'] = config('env.oauth.FACEBOOK_CLIENT_SECRET');
 
             return response()->json(new Response($request->token, $data));
 
