@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
+use App\Imports\ProductsUpdate;
 use App\Models\Helper\ControllerHelper;
 use App\Models\Helper\Response;
 use App\Models\Helper\Utils;
@@ -68,4 +69,27 @@ class BulkController extends ControllerHelper
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }
     }
+
+    public function updateData(Request $request)
+    {
+        try {
+            if ($can = Utils::userCan($this->user, 'bulk_upload.edit')) {
+                return $can;
+            }
+
+            $lang = $request->header('language');
+
+            $file = $request['file'];
+
+            $products = new ProductsUpdate($lang);
+            \Excel::import($products, $file);
+
+            return response()->json(new Response($request->token, true));
+
+        } catch (\Exception $ex) {
+            return response()->json(Validation::error($request->token, $ex->getMessage()));
+        }
+    }
+
+
 }
