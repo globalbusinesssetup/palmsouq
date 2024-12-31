@@ -254,7 +254,7 @@ Route::group([
         ], function (){
             Route::get('export', [BulkController::class, 'exportData']);
             Route::post('import', [BulkController::class, 'importData']);
-
+            Route::post('update', [BulkController::class, 'updateData']);
         });
 
 
