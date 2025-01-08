@@ -179,7 +179,7 @@ class FileHelper
             if ($object->exists()) {
 
                 $object->delete();
-                $thumbObject = $bucket->object(config('googlecloud.path_prefix') . env('THUMB_PREFIX') . $image);
+                $thumbObject = $bucket->object(config('googlecloud.path_prefix') . config('env.media.THUMB_PREFIX') . $image);
 
                 if ($thumbObject->exists()) {
                     $thumbObject->delete();
@@ -202,7 +202,7 @@ class FileHelper
                 unlink($file_path);
 
                 $thumb_file_path = $image ?
-                    FileHelper::uploadPath(env('THUMB_PREFIX') . $image, true) : null;
+                    FileHelper::uploadPath(config('env.media.THUMB_PREFIX') . $image, true) : null;
 
                 if (file_exists($thumb_file_path)) {
                     unlink($thumb_file_path);
@@ -274,8 +274,7 @@ class FileHelper
                     ->resize(320, 320, function ($constraint) {
                         $constraint->aspectRatio();
                     });
-
-                $googleCloudStorageThumbPath = config('googlecloud.path_prefix') . env('THUMB_PREFIX') . $filename;
+                $googleCloudStorageThumbPath = config('googlecloud.path_prefix') . config('env.media.THUMB_PREFIX') . $filename;
 
                 $bucket->upload($thumbImg->stream(), [
                     'name' => $googleCloudStorageThumbPath
@@ -332,7 +331,7 @@ class FileHelper
                 })
                 ->save(Storage::disk('public')
                         ->getAdapter()
-                        ->getPathPrefix() . DIRECTORY_SEPARATOR . env('THUMB_PREFIX') . $filename, 80);
+                        ->getPathPrefix() . DIRECTORY_SEPARATOR . config('env.media.THUMB_PREFIX') . $filename, 80);
         } catch (\Exception $ex) {
             throw $ex;
         }
