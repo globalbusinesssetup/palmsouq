@@ -57,6 +57,7 @@ use App\Http\Controllers\FeatureWysiwygImageController;
 use App\Http\Controllers\CustomScriptsController;
 use App\Http\Controllers\ProductImageAttributesController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\HomepageBriefController;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\View;
@@ -264,6 +265,14 @@ Route::group([
             Route::get('all', [ImagesController::class, 'all']);
             Route::post('upload', [ImagesController::class, 'upload']);
             Route::delete('delete/{image}', [ImagesController::class, 'delete']);
+        });
+
+        Route::group([
+            'prefix' => 'home-brief'
+        ], function (){
+            Route::get('find', [HomepageBriefController::class, 'find']);
+            Route::post('action', [HomepageBriefController::class, 'update']);
+            Route::post('upload/{id?}', [HomepageBriefController::class, 'upload']);
         });
 
 
