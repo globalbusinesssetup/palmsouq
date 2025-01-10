@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\HomepageBrief;
+use App\Models\Helper\ControllerHelper;
+use App\Models\Helper\FileHelper;
+use App\Models\Helper\Response;
 
-class HomepageBriefController extends Controller {
-    public function find(): JsonResponse
+class HomepageBriefController extends ControllerHelper {
+    public function find()
     {
         $homepageBrief = HomepageBrief::first();
 
@@ -18,15 +21,15 @@ class HomepageBriefController extends Controller {
             'title' => $homepageBrief->title,
             'subtitle' => $homepageBrief->subtitle,
             'description' => $homepageBrief->description,
-            'image_url' => asset($homepageBrief->image),
+            'image' => $homepageBrief->image,
         ], 200);
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'required|string|max:255',
+            'title' => 'required|string',
+            'subtitle' => 'required|string',
             'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         ]);
@@ -38,64 +41,56 @@ class HomepageBriefController extends Controller {
         }
 
         // Update text fields
-        $homepageBrief->title = $request->input('title');
-        $homepageBrief->subtitle = $request->input('subtitle');
-        $homepageBrief->description = $request->input('description');
+        // $homepageBrief->title = $request->input('title');
+        // $homepageBrief->subtitle = $request->input('subtitle');
+        // $homepageBrief->description = $request->input('description');
 
         // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete the old image if it exists
-            if ($homepageBrief->image && Storage::exists('public/' . $homepageBrief->image)) {
-                Storage::delete('public/' . $homepageBrief->image);
-            }
+        // if ($request->hasFile('image')) {
+        //     $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
+        //     $request['image'] = $image_info['name'];
+        // }
 
-            // Store the new image
-            $imagePath = $request->file('image')->store('uploads', 'public');
-            $homepageBrief->image = $imagePath;
-        }
+        $old_image = $homepageBrief->image;
 
-        $homepageBrief->save();
+        $homepageBrief->update($request->all());
 
         return response()->json(['message' => 'Homepage brief updated successfully', 'data' => $homepageBrief], 200);
     }
 
-    public function upload(Request $request, $id = null)
+    public function upload(Request $request, $id)
     {
         try {
             // Validate the incoming request for image
             $request->validate([
-                'image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
+                'image' => 'required|file|image|mimes:jpg,png,jpeg,webp|max:2048',
             ]);
     
             // Find the HomepageBrief by ID
             $homepageBrief = HomepageBrief::find($id);
     
             if (!$homepageBrief) {
-                return response()->json(['message' => 'Homepage brief not found'], 404);
+                return response()->json(['message' => ''], 404);
             }
-    
+            $old_image = $homepageBrief->image;
             // Handle image upload using FileHelper
             if ($request->hasFile('image')) {
                 $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
-                $request['image'] = $image_info['name'];
+                $homepageBrief->image = $image_info['name'];
             }
-    
-            $old_image = $homepageBrief->image;
-    
-            if($homepageBrief->update($request->all())) {
+            if($homepageBrief->save()) {
                 if ($old_image) {
                     FileHelper::deleteFile($old_image);
                 }
             }
-    
             $home_brief = HomepageBrief::find($id);
-    
+            
     
             return response()->json(new Response($request->token, $home_brief));
     
         } catch (\Exception $ex) {
             // Handle exceptions and return an error response
-            return response()->json(['message' => 'An error occurred', 'error' => $ex->getMessage()], 500);
+            return response()->json(['message' => '', 'error' => $ex->getMessage()], 500);
         }
 
     }   

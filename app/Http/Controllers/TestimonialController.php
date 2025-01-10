@@ -86,10 +86,7 @@ class TestimonialController extends ControllerHelper
                 // Format the updated_at date
                 $testimonial->updated = Utils::formatDate($testimonial->updated_at);
 
-                return response()->json([
-                    'message' => 'Testimonial updated successfully',
-                    'data' => $testimonial
-                ], 200); // Return success response with 200 status for update
+                return response()->json(new Response($request->token, $testimonial), 200); // Return success response with 200 status for update
 
             } else {
                 // If no ID, create a new testimonial
@@ -98,10 +95,7 @@ class TestimonialController extends ControllerHelper
                 // Format the created_at date
                 $testimonial->created = Utils::formatDate($testimonial->created_at);
 
-                return response()->json([
-                    'message' => 'Testimonial created successfully',
-                    'data' => $testimonial
-                ], 201); // Return success response with 201 status for creation
+                return response()->json(new Response($request->token, $testimonial), 201); // Return success response with 201 status for creation
             }
         } catch (\Exception $ex) {
             // Handle exceptions and return a 500 Internal Server Error with a message
