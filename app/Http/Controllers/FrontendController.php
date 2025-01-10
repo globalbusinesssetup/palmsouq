@@ -37,6 +37,7 @@ use App\Models\UpdatedInventory;
 use App\Models\UserFollowStore;
 use App\Models\Voucher;
 use App\Models\Testimonial;
+use App\Models\HomepageBrief;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
@@ -1511,6 +1512,10 @@ class FrontendController extends Controller
                         ->select('home_sliders.*')
                         ->get();
 
+                    // Home Brief
+
+                    $home_brief = HomepageBrief::select('title', 'subtitle', 'description', 'image')->first();
+
                     // SITE FEATURE
                     $siteFeature = SiteFeature::where('status', Config::get('constants.status.PUBLIC'))
                         ->get();
@@ -1630,7 +1635,7 @@ class FrontendController extends Controller
 
                 $data['site_features'] = $siteFeature;
                 $data['slider'] = $sliderImages;
-
+                $data['home_brief'] = $home_brief;
 
                 $data['featured_categories'] = $featured_categories;
 
