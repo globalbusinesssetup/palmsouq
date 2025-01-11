@@ -9,7 +9,7 @@ use App\Models\Helper\FileHelper;
 use App\Models\Helper\Response;
 
 class HomepageBriefController extends ControllerHelper {
-    public function find()
+    public function find(Request $request)
     {
         $homepageBrief = HomepageBrief::first();
 
@@ -17,12 +17,7 @@ class HomepageBriefController extends ControllerHelper {
             return response()->json(['message' => 'Homepage brief not found'], 404);
         }
 
-        return response()->json([
-            'title' => $homepageBrief->title,
-            'subtitle' => $homepageBrief->subtitle,
-            'description' => $homepageBrief->description,
-            'image' => $homepageBrief->image,
-        ], 200);
+        return response()->json(new Response($request->token, $homepageBrief), 200);
     }
 
     public function update(Request $request)
@@ -63,7 +58,7 @@ class HomepageBriefController extends ControllerHelper {
         try {
             // Validate the incoming request for image
             $request->validate([
-                'image' => 'required|file|image|mimes:jpg,png,jpeg,webp|max:2048',
+                'photo' => 'required|file|image|mimes:jpg,png,jpeg,webp|max:2048',
             ]);
     
             // Find the HomepageBrief by ID
@@ -74,8 +69,8 @@ class HomepageBriefController extends ControllerHelper {
             }
             $old_image = $homepageBrief->image;
             // Handle image upload using FileHelper
-            if ($request->hasFile('image')) {
-                $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
+            if ($request->hasFile('photo')) {
+                $image_info = FileHelper::uploadImage($request['photo'], 'homepage_brief');
                 $homepageBrief->image = $image_info['name'];
             }
             if($homepageBrief->save()) {
