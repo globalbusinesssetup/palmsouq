@@ -25,8 +25,7 @@ class HomepageBriefController extends ControllerHelper {
         $request->validate([
             'title' => 'required|string',
             'subtitle' => 'required|string',
-            'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'description' => 'required|string'
         ]);
 
         $homepageBrief = HomepageBrief::first();
@@ -35,22 +34,11 @@ class HomepageBriefController extends ControllerHelper {
             $homepageBrief = new HomepageBrief();
         }
 
-        // Update text fields
-        // $homepageBrief->title = $request->input('title');
-        // $homepageBrief->subtitle = $request->input('subtitle');
-        // $homepageBrief->description = $request->input('description');
-
-        // Handle image upload
-        // if ($request->hasFile('image')) {
-        //     $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
-        //     $request['image'] = $image_info['name'];
-        // }
-
         $old_image = $homepageBrief->image;
 
         $homepageBrief->update($request->all());
 
-        return response()->json(['message' => 'Homepage brief updated successfully', 'data' => $homepageBrief], 200);
+        return response()->json(new Response($request->token, $homepageBrief), 200);
     }
 
     public function upload(Request $request, $id)
