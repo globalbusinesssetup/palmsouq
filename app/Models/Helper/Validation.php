@@ -1032,7 +1032,7 @@ class Validation
         // Check the environment configuration for media storage
         if (env('MEDIA_STORAGE') == config('env.media.URL')) {
             // Allow only image files (jpeg, png, jpg, gif) and max 10MB per file
-            $rules['images'] = 'required|array|max:250'; // You can also limit the number of files, e.g., max 250
+            $rules['images'] = 'required|array|max:750'; // You can also limit the number of files, e.g., max 250
             $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif,webp|max:10240'; // 10MB per image, and only image files allowed
         } else {
             // Same validation logic for the else case

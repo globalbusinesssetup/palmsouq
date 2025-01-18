@@ -101,7 +101,8 @@ class Utils
     }
 
 
-    public static function findCommonElements($arrays) {
+    public static function findCommonElements($arrays) 
+    {
         if (count($arrays) === 0) {
             return [];
         }
@@ -115,15 +116,15 @@ class Utils
         return $commonElements;
     }
 
-
-
-    public static function startsWith($string, $startString) {
+    public static function startsWith($string, $startString) 
+    {
         $len = strlen($startString);
         return (substr($string, 0, $len) === $startString);
     }
 
 
-    public static function scanDir($dir) {
+    public static function scanDir($dir) 
+    {
         $ignored = array('.', '..', '.svn', '.htaccess');
 
         $files = array();
@@ -139,7 +140,8 @@ class Utils
     }
 
 
-    public static function getRequest($url, $request){
+    public static function getRequest($url, $request)
+    {
         $ch = curl_init();
         curl_setopt_array($ch, array(
             CURLOPT_URL => $url,
@@ -184,7 +186,8 @@ class Utils
     }
 
 
-    public static function seperateLangData($data, $langFields){
+    public static function seperateLangData($data, $langFields)
+    {
         $langData = [];
         $mainData = [];
 

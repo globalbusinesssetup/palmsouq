@@ -571,6 +571,7 @@ class ProductsImport implements ToCollection
                         $imageName = Utils::copyImageFromUrl($imageName, 'product');
                     } else {
                         // If the image is local, search for it in the public/uploads directory
+                        \Log::info('imageName', ['image' => $imageName]);
                         $imageName = Utils::searchImageInStorage($imageName);
                     }
                     \Log::info('imageName', ['image' => $imageName]);
