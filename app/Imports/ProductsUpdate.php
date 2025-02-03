@@ -28,17 +28,25 @@ class ProductsUpdate implements ToCollection
 
         foreach ($data as $row) {
             $sku = trim($row[0]);
-            $stock = trim($row[1]);
-            $sellingPrice = trim($row[2]);
-            $offerPrice = trim($row[3]);
+            $supplier_code = trim($row[1]);
+            $supplier = trim($row[2]);
+            $stock = trim($row[3]);
+            $sellingPrice = trim($row[4]);
+            $offerPrice = trim($row[5]);
 
             // Find the product by SKU
             $product = Product::where('sku', $sku)->first();
 
             if ($product) {
+                // Keep old values if new values are empty
+                $sellingPrice = $sellingPrice ?: $product->selling;
+                $offerPrice = $offerPrice ?: $product->offered;
+
                 // Update the stock, selling price, and offer price
                 $product->update([
                     'stock' => $stock,
+                    'supplier_item_code' => $supplier_code,
+                    'supplier' => $supplier,
                     'selling' => $sellingPrice,
                     'offered' => $offerPrice,
                 ]);

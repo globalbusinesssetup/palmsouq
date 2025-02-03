@@ -104,15 +104,14 @@ class ProductsController extends ControllerHelper
                     'pl.overview', 'pl.unit', 'pl.badge', 'products.stock',
                     'pl.meta_title', 'pl.meta_description');
 
-
-
-
                 if ($request->q) {
-                    $query = $query->where('pl.title', 'LIKE', "%{$request->q}%");
+                    $query = $query->where(function ($query) use ($request) {
+                        $query->where('pl.title', 'LIKE', "%{$request->q}%")
+                              ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
+                    });
                 }
 
             } else {
-
                 $query = $query->with('product_categories.category');
                 $query = $query->with('brand')
                     ->with('tax_rules');
@@ -125,10 +124,12 @@ class ProductsController extends ControllerHelper
                     'products.created_at');
 
                 if ($request->q) {
-                    $query = $query->where('products.title', 'LIKE', "%{$request->q}%");
+                    $query = $query->where(function ($query) use ($request) {
+                        $query->where('products.title', 'LIKE', "%{$request->q}%")
+                              ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
+                    });
                 }
             }
-
 
             $data = $query->paginate(Config::get('constants.api.PAGINATION'));
 
