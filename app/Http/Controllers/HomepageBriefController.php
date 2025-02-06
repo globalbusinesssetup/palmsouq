@@ -9,6 +9,7 @@ use App\Models\Helper\FileHelper;
 use App\Models\Helper\Response;
 
 class HomepageBriefController extends ControllerHelper {
+
     public function find(Request $request)
     {
         $homepageBrief = HomepageBrief::first();
@@ -17,7 +18,7 @@ class HomepageBriefController extends ControllerHelper {
             return response()->json(['message' => 'Homepage brief not found'], 404);
         }
 
-        return response()->json(new Response($request->token, $homepageBrief), 200);
+        return response()->json(new Response($request->token, $homepageBrief));
     }
 
     public function update(Request $request)
@@ -25,7 +26,7 @@ class HomepageBriefController extends ControllerHelper {
         $request->validate([
             'title' => 'required|string',
             'subtitle' => 'required|string',
-            'description' => 'required|string'
+            'description' => 'required|string',
         ]);
 
         $homepageBrief = HomepageBrief::first();
@@ -38,7 +39,7 @@ class HomepageBriefController extends ControllerHelper {
 
         $homepageBrief->update($request->all());
 
-        return response()->json(new Response($request->token, $homepageBrief), 200);
+        return response()->json(new Response($request->token, $homepageBrief));
     }
 
     public function upload(Request $request, $id)
