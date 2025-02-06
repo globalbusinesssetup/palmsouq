@@ -271,7 +271,7 @@ Route::group([
             'prefix' => 'home-brief'
         ], function (){
             Route::get('find', [HomepageBriefController::class, 'find']);
-            Route::post('action', [HomepageBriefController::class, 'update']);
+            Route::post('action/{id?}', [HomepageBriefController::class, 'update']);
             Route::post('upload/{id?}', [HomepageBriefController::class, 'upload']);
         });
 
