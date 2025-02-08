@@ -1027,6 +1027,7 @@ class Validation
             return self::validationMessage($request, $rules, $errorType);
         }
     }
+
     public static function bulk_image_upload($request, $errorType = 'image')
     {
         // Check the environment configuration for media storage
@@ -1036,7 +1037,7 @@ class Validation
             $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif,webp|max:10240'; // 10MB per image, and only image files allowed
         } else {
             // Same validation logic for the else case
-            $rules['images'] = 'required|array|max:250';
+            $rules['images'] = 'required|array|max:750';
             $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif,webp|max:10240'; // Same rules for images
         }
 
