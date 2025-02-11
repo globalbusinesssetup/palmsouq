@@ -261,33 +261,29 @@ class OrdersController extends ControllerHelper
             $query = $query->orderBy('orders.' . $request->orderby, $request->type);
 
             if ($request->filter) {
-
-                foreach (explode(',', $request->filter) as $i) {
-                    if ($i == 'cancelled') {
-                        $query = $query->orWhere('cancelled', 1);
+                $query->where(function ($q) use ($request) {
+                    foreach (explode(',', $request->filter) as $i) {
+                        if ($i == 'cancelled') {
+                            $q->orWhere('cancelled', 1);
+                        }
+                        if ($i == 'paid') {
+                            $q->orWhere('payment_done', 1);
+                        }
+                        if ($i == 'unpaid') {
+                            $q->orWhere('payment_done', 0)
+                                ->whereNotIn('order_method', [Config::get('constants.paymentMethod.STRIPE')]);
+                        }
+                        if ($i == 'cash_on_delivery') {
+                            $q->orWhere('order_method', Config::get('constants.paymentMethod.CASH_ON_DELIVERY'));
+                        }
                     }
-                    if ($i == 'paid') {
-                        $query = $query->orWhere('payment_done', 1);
-                    }
-                    if ($i == 'unpaid') {
-                        $query = $query->orWhere('payment_done', 0);
-                    }
-                    if ($i == 'card_payment') {
-                        $query = $query
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.RAZORPAY'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.STRIPE'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.FLUTTERWAVE'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.IYZICO_PAYMENT'));
-                    }
-                    if ($i == 'paypal') {
-                        $query = $query
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.PAYPAL'));
-                    }
-                    if ($i == 'cash_on_delivery') {
-                        $query = $query->orWhere('order_method',
-                            Config::get('constants.paymentMethod.CASH_ON_DELIVERY'));
-                    }
-                }
+                });
+            } else {
+                // If no filter, exclude orders with Stripe where payment_done = 0
+                $query->where(function ($q) {
+                    $q->where('order_method', '!=', Config::get('constants.paymentMethod.STRIPE'))
+                      ->orWhere('payment_done', '!=', 0);
+                });
             }
 
 

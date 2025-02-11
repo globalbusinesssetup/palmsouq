@@ -70,10 +70,10 @@ class ImagesController extends ControllerHelper
 
             // Convert array to Laravel Collection
             $filesCollection = collect($files);
-
+            \Log::info($filesCollection);
             // Paginate the collection
             $paginatedFiles = new LengthAwarePaginator(
-                $filesCollection->forPage($page, $perPage), // Slice items for current page
+                $filesCollection->forPage($page, $perPage)->values(), // Slice items for current page
                 $filesCollection->count(), // Total count
                 $perPage,
                 $page, // Current page
