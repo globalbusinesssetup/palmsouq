@@ -50,25 +50,21 @@ class FrontendController extends Controller
     public function all(Request $request)
     {
         try {
-
             $lang = $request->header('language');
 
+            // Start query
             $query = Product::query();
             $query->with('product_categories', 'product_inventories');
 
             $query = $query->leftJoin('flash_sales', function ($join) {
-
                 $join->on('products.id', '=', 'flash_sale_products.product_id');
-
                 $join->leftJoin('flash_sale_products', function ($join) {
                     $join->on('flash_sales.id', '=', 'flash_sale_products.flash_sale_id');
                 });
-
                 $join->where('flash_sales.end_time', '>=', date('Y-m-d H:i:s'))
                     ->where('flash_sales.status', Config::get('constants.status.PUBLIC'));
             })
                 ->groupBy('products.id');
-
 
             $allShipping = null;
             $allCollection = null;
@@ -76,166 +72,52 @@ class FrontendController extends Controller
             $selectedBrand = null;
             $sidebarData = $request->sidebar_data === 'true';
 
-
             if ($lang) {
-
-
-                $queryCat = Category::query();
-
-
-                $queryCat = $queryCat->leftJoin('category_langs as cl', function ($join) use ($lang) {
-                    $join->on('cl.category_id', '=', 'categories.id');
-                    $join->where('cl.lang', $lang);
-                });
-                $queryCat = $queryCat->select('categories.*', 'cl.title');
-
-                $queryCat = $queryCat->with(['child' => function ($queryCat) use ($lang) {
-                    $queryCat->leftJoin('category_langs as cl', function ($join) use ($lang) {
-                        $join->on('cl.category_id', '=', 'categories.id');
-                        $join->where('cl.lang', $lang);
-                    });
-                    $queryCat->select('categories.*', 'cl.title');
-                }]);
-
-
-                $queryCat = $queryCat->orderBy('categories.created_at', 'desc')
-                    ->where('categories.status', Config::get('constants.status.PUBLIC'));
-                $category = $queryCat->where('slug', $request->category)->first();
-
-
                 $query = $query->leftJoin('product_langs as pl', function ($join) use ($lang) {
                     $join->on('pl.product_id', '=', 'products.id');
                     $join->where('pl.lang', $lang);
                 });
 
-
-                $query = $query->select('products.id', 'products.slug', 'pl.title', 'products.badge',
+                $query = $query->select(
+                    'products.id', 'products.slug', 'pl.title', 'products.badge',
                     'products.selling', 'products.offered',
                     'products.image', 'products.review_count', 'products.rating', 'flash_sale_products.price',
-                    'flash_sales.end_time');
-
-
-                if ($sidebarData) {
-
-                    $allBrand = Brand::leftJoin('brand_langs as b', function ($join) use ($lang) {
-                        $join->on('b.brand_id', '=', 'brands.id');
-                        $join->where('b.lang', $lang);
-                    })
-                        ->where('brands.status', Config::get('constants.status.PUBLIC'))
-                        ->select('brands.id', 'brands.title', 'b.title')
-                        ->get();
-
-                    $allCollection = ProductCollection::leftJoin('product_collection_langs as pcl',
-                        function ($join) use ($lang) {
-                            $join->on('pcl.product_collection_id', '=', 'product_collections.id');
-                            $join->where('pcl.lang', $lang);
-                        })
-                        ->where('product_collections.status', Config::get('constants.status.PUBLIC'))
-                        ->select('product_collections.id', 'product_collections.title', 'pcl.title')
-                        ->get();
-
-                    $allShipping = ShippingRule::leftJoin('shipping_rule_langs as srl',
-                        function ($join) use ($lang) {
-                            $join->on('srl.shipping_rule_id', '=', 'shipping_rules.id');
-                            $join->where('srl.lang', $lang);
-                        })
-                        ->select('shipping_rules.id', 'shipping_rules.title', 'srl.title')
-                        ->get();
-                }
-
+                    'flash_sales.end_time', 'products.brand_id'
+                );
             } else {
+                $query = $query->select(
+                    'products.id', 'products.title', 'products.slug',
+                    'products.badge', 'products.selling', 'products.offered',
+                    'products.image', 'products.review_count', 'products.rating', 'flash_sale_products.price',
+                    'flash_sales.end_time', 'products.brand_id'
+                );
+            }
 
-
-                /*if ($request->sub_category) {
-
-                    $subCategory = SubCategory::with('category')
-                        ->where('slug', $request->sub_category)
-                        ->first();
-
-                    if ($subCategory) {
-                        $query = $query->where('products.subcategory_id', $subCategory->id);
-                    }
-
-                } else */
-
-                $category = Category::with('child')
-                    ->orderBy('created_at', 'desc')
+            // Fetching the category details
+            $category = null;
+            if ($request->category) {
+                $category = Category::where('slug', $request->category)
                     ->where('status', Config::get('constants.status.PUBLIC'))
-                    ->where('slug', $request->category)
                     ->first();
 
-
-                // $query = $query->where('products.category_id', $category->id);
-
-                $query = $query->select('products.id', 'products.title', 'products.slug',
-                    'products.badge',
-                    'products.selling', 'products.offered',
-                    'products.image', 'products.review_count', 'products.rating', 'flash_sale_products.price',
-                    'flash_sales.end_time');
-
-
-                if ($sidebarData) {
-
-                    $allBrand = Brand::where('status', Config::get('constants.status.PUBLIC'))
-                        ->select('id', 'title')
-                        ->get();
-
-                    $allCollection = ProductCollection::where('status', Config::get('constants.status.PUBLIC'))
-                        ->select('id', 'title')
-                        ->get();
-
-                    $allShipping = ShippingRule::select('id', 'title')->get();
-
+                if ($category) {
+                    $productCategories = ProductCategory::where('category_id', $category->id)->pluck('product_id')->toArray();
+                    $query = $query->whereIn('products.id', $productCategories);
                 }
             }
+
             
 
-            if ($request->brand) {
-                $brandId = $request->brand;
-
-                // filter by brand
-                $query = $query->whereIn('products.brand_id', explode(',', $brandId));
-
-                // get the brand info
-                $selectedBrand = Brand::where('id', $brandId)
-                                ->where('status', Config::get('constants.status.PUBLIC'))
-                                ->select(
-                                    'id', 
-                                    'title', 
-                                    'image',
-                                    'banner_image',
-                                )
-                                ->first();
-            }
-
             if ($request->collection) {
-                $query = $query
-                    ->rightJoin('collection_with_products as cwp', function ($join) {
-                        $join->on('products.id', '=', 'cwp.product_id');
-                    })
-                    ->rightJoin('product_collections as pc', function ($join) use ($request) {
-                        $join->on('pc.id', '=', 'cwp.product_collection_id');
-                        $join->where('pc.status', Config::get('constants.status.PUBLIC'))
-                            ->whereIn('pc.id', explode(',', $request->collection));
-                    });
+                $query = $query->rightJoin('collection_with_products as cwp', function ($join) {
+                    $join->on('products.id', '=', 'cwp.product_id');
+                })
+                ->rightJoin('product_collections as pc', function ($join) use ($request) {
+                    $join->on('pc.id', '=', 'cwp.product_collection_id');
+                    $join->where('pc.status', Config::get('constants.status.PUBLIC'))
+                        ->whereIn('pc.id', explode(',', $request->collection));
+                });
             }
-
-
-            if ($request->category) {
-
-                $productCategories = ProductCategory::where('category_id', $category->id)->get();
-
-                $productIds = [];
-                foreach ($productCategories as $i) {
-                    array_push($productIds, $i->product_id);
-                }
-
-
-                $query = $query->whereIn('products.id', $productIds);
-
-
-            }
-
 
             if ($request->rating != 0) {
                 $query = $query->where('products.rating', '>=', $request->rating);
@@ -250,13 +132,11 @@ class FrontendController extends Controller
                     $q->where(function ($qr) use ($request) {
                         $qr->whereNotNull('flash_sales.end_time');
                         $qr->whereBetween('flash_sale_products.price', [$request->min, $request->max]);
-
                     });
                     $q->orWhere(function ($qr) use ($request) {
                         $qr->whereNull('flash_sales.end_time');
                         $qr->where('products.offered', '=', 0);
-                        $qr->whereBetween('products.selling', [$request->min, $request->max]);;
-
+                        $qr->whereBetween('products.selling', [$request->min, $request->max]);
                     });
                     $q->orWhere(function ($qr) use ($request) {
                         $qr->whereNull('flash_sales.end_time');
@@ -268,41 +148,28 @@ class FrontendController extends Controller
 
             $query = $query->where('products.status', Config::get('constants.status.PUBLIC'));
 
-
             if ($request->shipping) {
                 $query = $query->whereIn('products.shipping_rule_id', explode(',', $request->shipping));
             }
 
             if ($request->sortby) {
                 if ($request->sortby == 'price_low_to_high') {
-
-                    $query = $query
-                        ->addSelect(DB::raw(
-                            '(CASE
-                        WHEN flash_sales.end_time IS NOT NULL
-                            THEN flash_sale_products.price
-                        WHEN products.offered=0 OR products.offered IS NULL
-                            THEN products.selling
-                        ELSE products.offered
-                        END) AS current_price'
-                        ))
-                        ->orderBy('current_price', 'asc');
-
-                } else if ($request->sortby == 'price_high_to_low') {
-
-                    $query = $query
-                        ->addSelect(DB::raw(
-                            '(CASE
-                        WHEN flash_sales.end_time IS NOT NULL
-                            THEN flash_sale_products.price
-                        WHEN products.offered=0 OR products.offered IS NULL
-                            THEN products.selling
-                        ELSE products.offered
-                        END) AS current_price'
-                        ))
-                        ->orderBy('current_price', 'desc');
-
-                } else if ($request->sortby == 'avg_customer_review') {
+                    $query = $query->addSelect(DB::raw('
+                        (CASE
+                            WHEN flash_sales.end_time IS NOT NULL THEN flash_sale_products.price
+                            WHEN products.offered=0 OR products.offered IS NULL THEN products.selling
+                            ELSE products.offered
+                        END) AS current_price
+                    '))->orderBy('current_price', 'asc');
+                } elseif ($request->sortby == 'price_high_to_low') {
+                    $query = $query->addSelect(DB::raw('
+                        (CASE
+                            WHEN flash_sales.end_time IS NOT NULL THEN flash_sale_products.price
+                            WHEN products.offered=0 OR products.offered IS NULL THEN products.selling
+                            ELSE products.offered
+                        END) AS current_price
+                    '))->orderBy('current_price', 'desc');
+                } elseif ($request->sortby == 'avg_customer_review') {
                     $query = $query->orderBy('products.rating', 'desc');
                 } else {
                     $query = $query->orderBy('products.created_at', 'desc');
@@ -311,22 +178,51 @@ class FrontendController extends Controller
                 $query = $query->orderBy('products.updated_at', 'desc');
             }
 
+            // ✅ Get all product brand IDs before pagination (ensures we get brands from all pages)
+            $allProductBrandIds = $query->pluck('products.brand_id')->unique()->toArray();
+            
+            // ✅ filter by brand
+            if ($request->brand) {
+                $brandId = explode(',', $request->brand);
+                $query = $query->whereIn('products.brand_id', $brandId);
+                $selectedBrand = Brand::whereIn('id', $brandId)
+                    ->where('status', Config::get('constants.status.PUBLIC'))
+                    ->select('id', 'title', 'image', 'banner_image')
+                    ->first();
+            }
+            
+            // Apply pagination
             $pagination = Config::get('constants.listing.PAGINATION');
+            $products = $query->paginate($pagination);
 
-            $data['result'] = $query->paginate($pagination);
+            // ✅ Fetch only brands associated with retrieved products (from all pages)
+            $allBrand = Brand::leftJoin('brand_langs as b', function ($join) use ($lang) {
+                $join->on('b.brand_id', '=', 'brands.id');
+                $join->where('b.lang', $lang);
+            })
+            ->whereIn('brands.id', $allProductBrandIds)
+            ->select('brands.id', DB::raw('COALESCE(b.title, brands.title) as title'))
+            ->get();
+        
 
-            //$data['sub_category'] = $subCategory;
+            if ($sidebarData) {
+                $allCollection = ProductCollection::where('status', Config::get('constants.status.PUBLIC'))
+                    ->select('id', 'title')
+                    ->get();
+
+                $allShipping = ShippingRule::select('id', 'title')->get();
+            }
+
+            // ✅ Final response
+            $data['result'] = $products;
             $data['category'] = $category;
             $data['shipping'] = $allShipping;
-            $data['shipping'] = $allShipping;
-            $data['brands'] = $allBrand;
+            $data['brands'] = $allBrand; // Updated to show only brands of retrieved products
             $data['brand'] = $selectedBrand;
             $data['collections'] = $allCollection;
 
             return response()->json(new Response($request->token, $data));
-
         } catch (\Exception $e) {
-
             if ($e instanceof \PDOException) {
                 return response()->json(Validation::error(null, explode('.', $e->getMessage())[0]));
             } else {
@@ -334,6 +230,7 @@ class FrontendController extends Controller
             }
         }
     }
+
 
     // reserved this copy for future use
     // public function all(Request $request)
