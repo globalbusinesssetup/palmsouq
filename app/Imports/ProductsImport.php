@@ -183,6 +183,8 @@ class ProductsImport implements ToCollection
 
 
 
+            $trimmedKey = strtolower(trim($row[1]));
+            $lowercaseBrandsArr = array_change_key_case($brandsArr, CASE_LOWER);
 
             if ($lang) {
 
@@ -201,7 +203,9 @@ class ProductsImport implements ToCollection
                 }
 
 
-                if (!key_exists(trim($row[1]), $brandsArr)) {
+                
+
+                if (!array_key_exists($trimmedKey, $lowercaseBrandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => "",
@@ -265,8 +269,9 @@ class ProductsImport implements ToCollection
                     ]);
                     $taxRulesArr[$tr->title] = $tr->id;
                 }
+                
 
-                if (!key_exists(trim($row[1]), $brandsArr)) {
+                if (!array_key_exists($trimmedKey, $lowercaseBrandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => trim($row[1])
@@ -342,7 +347,7 @@ class ProductsImport implements ToCollection
                 'slug' => $slug,
                 'tags' => $row[33],
                 'tax_rule_id' => $taxRulesArr[trim($row[34])],
-                'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
+                'brand_id' => trim($row[1]) == '' ? null : $lowercaseBrandsArr[strtolower($trimmedKey)],
                 'shipping_rule_id' => $shippingRulesArr[trim($row[35])],
                 'bundle_deal_id' => trim($row[37]) == '' ? null : $bundleDealsArr[trim($row[34])],
                 'stock' => $row[9],

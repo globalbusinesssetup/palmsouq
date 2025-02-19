@@ -1508,7 +1508,6 @@ class OrdersController extends ControllerHelper
                             ->where('selected', Config::get('constants.status.PUBLIC'))
                             ->delete();
 
-
                         $re['name'] = $user->name;
                         $re['email'] = $user->email;
 

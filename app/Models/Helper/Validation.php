@@ -173,9 +173,9 @@ class Validation
     public static function user_address($request)
     {
         $rules = [
+            'label' => 'required',
             'country' => 'required|min:2|max:2',
             'city' => 'required',
-            // 'zip' => 'required',
             'address_1' => 'required',
             'email' => 'required',
             'name' => 'required',

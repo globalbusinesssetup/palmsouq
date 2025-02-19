@@ -19,6 +19,7 @@ class UserAddressSeeder extends Seeder
         $items = [
             [
                 'id' => 1,
+                'label' => 'Home',
                 'country' => 'AF',
                 'state' => 'BDS',
                 'user_id' => 1,

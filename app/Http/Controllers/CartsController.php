@@ -239,9 +239,11 @@ class CartsController extends Controller
             $q = $q->where('inventory_id', $request->inventory_id);
             $existingCart = $q->first();
 
+            $inventory = UpdatedInventory::find($request->inventory_id);
+
             if ($existingCart) {
 
-                $inventory = UpdatedInventory::find($request->inventory_id);
+                
 
                 if ($existingCart->quantity + $request->quantity > $inventory->quantity) {
                     return response()->json(Validation::error($request->token,
@@ -257,7 +259,11 @@ class CartsController extends Controller
 
             } else {
 
-
+                if ($request->quantity > $inventory->quantity) {
+                    return response()->json(Validation::error($request->token,
+                        __('lang.quantity_exceeds', [], $lang)
+                    ));
+                }
                 if ($request->user('user')) {
 
                     $request['user_id'] = $request->user('user')->id;
