@@ -1739,8 +1739,8 @@ class OrdersController extends ControllerHelper
                 } else {
                     Cart::create([
                         'product_id' => $op->product_id,
-                        'user_id' => $request->user('user')->id ?? '',
-                        'user_token' => $request->user_token ?? '',
+                        'user_id' => $request->user('user')->id ?? null,
+                        'user_token' => $request->user_token ?? null,
                         'quantity' => $op->quantity,
                         'selected' => Config::get('constants.status.PUBLIC'),
                         'shipping_place_id' => $op->shipping_place_id,
