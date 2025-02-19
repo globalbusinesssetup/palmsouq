@@ -387,7 +387,7 @@ class OrdersController extends ControllerHelper
     {
         try {
 
-            if (!$request->user('user')) {
+            if (!$request->user('user') || !$request->user_token) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
 
