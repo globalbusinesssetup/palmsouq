@@ -2216,6 +2216,7 @@ class FrontendController extends Controller
                         ->where('status', Config::get('constants.status.PUBLIC'))
                         ->select('title', 'price', 'type', 'code', 'min_spend', 'usage_limit', 'limit_per_customer')
                         ->get();
+                    
                 }
 
 

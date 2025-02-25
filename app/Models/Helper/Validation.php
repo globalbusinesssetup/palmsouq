@@ -575,7 +575,7 @@ class Validation
         if(!$message){
             $message = __('lang.went_wrong', [], $lang);
         }
-        return new Response($token, [$error_type => [$message]], 201, $message);
+        return new Response($token, [$error_type => [$message]], 500, $message);
     }
 
 
@@ -610,7 +610,7 @@ class Validation
     }
 
 
-    public static function noData($status = 201, $message = null, $error_type = 'form', $lang = null)
+    public static function noData($status = 404, $message = null, $error_type = 'form', $lang = null)
     {
         if(!$message){
             $message = __('lang.couldnt_found', [], $lang);

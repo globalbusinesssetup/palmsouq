@@ -28,6 +28,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Mpdf\Mpdf;
 use Razorpay\Api\Api;
@@ -386,8 +387,7 @@ class OrdersController extends ControllerHelper
     public function find(Request $request, $id)
     {
         try {
-
-            if (!$request->user('user') || !$request->user_token) {
+            if (!$request->user('user') && !$request->user_token) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
 

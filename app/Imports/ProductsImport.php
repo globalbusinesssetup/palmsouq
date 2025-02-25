@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
@@ -183,9 +184,9 @@ class ProductsImport implements ToCollection
 
 
 
-            $trimmedKey = strtolower(trim($row[1]));
+            $trimmedBrand = strtolower(trim($row[1]));
             $lowercaseBrandsArr = array_change_key_case($brandsArr, CASE_LOWER);
-
+            Log::info('lowercaseBrandsArr', ['lowercaseBrandsArr' => $lowercaseBrandsArr]);
             if ($lang) {
 
                 if (!key_exists(trim($row[31]), $taxRulesArr)) {
@@ -205,7 +206,7 @@ class ProductsImport implements ToCollection
 
                 
 
-                if (!array_key_exists($trimmedKey, $lowercaseBrandsArr)) {
+                if (!array_key_exists($trimmedBrand, $lowercaseBrandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => "",
@@ -270,8 +271,9 @@ class ProductsImport implements ToCollection
                     $taxRulesArr[$tr->title] = $tr->id;
                 }
                 
-
-                if (!array_key_exists($trimmedKey, $lowercaseBrandsArr)) {
+                Log::info('trimmedBrand inside else condition', ['trimmedBrand' => $trimmedBrand]);
+                if (!array_key_exists($trimmedBrand, $lowercaseBrandsArr)) {
+                    Log::info('trimmedBrand', ['trimmedBrand' => $row[1]]);
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => trim($row[1])
@@ -347,7 +349,7 @@ class ProductsImport implements ToCollection
                 'slug' => $slug,
                 'tags' => $row[33],
                 'tax_rule_id' => $taxRulesArr[trim($row[34])],
-                'brand_id' => trim($row[1]) == '' ? null : $lowercaseBrandsArr[strtolower($trimmedKey)],
+                'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
                 'shipping_rule_id' => $shippingRulesArr[trim($row[35])],
                 'bundle_deal_id' => trim($row[37]) == '' ? null : $bundleDealsArr[trim($row[34])],
                 'stock' => $row[9],
