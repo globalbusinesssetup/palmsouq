@@ -186,7 +186,7 @@ class ProductsImport implements ToCollection
 
             $trimmedBrand = strtolower(trim($row[1]));
             $lowercaseBrandsArr = array_change_key_case($brandsArr, CASE_LOWER);
-            Log::info('lowercaseBrandsArr', ['lowercaseBrandsArr' => $lowercaseBrandsArr]);
+
             if ($lang) {
 
                 if (!key_exists(trim($row[31]), $taxRulesArr)) {
@@ -216,7 +216,7 @@ class ProductsImport implements ToCollection
                         'brand_id' => $br->id, 'title' => trim($row[1]), 'lang' => $lang
                     ]);
 
-                    $brandsArr[trim($row[1])] = $br->id;
+                    $lowercaseBrandsArr[trim(strtolower($row[1]))] = $br->id;
                 }
 
                 if (!key_exists(trim($row[32]), $shippingRulesArr)) {
@@ -278,7 +278,7 @@ class ProductsImport implements ToCollection
                         'admin_id' => $adminId,
                         'title' => trim($row[1])
                     ]);
-                    $brandsArr[$br->title] = $br->id;
+                    $lowercaseBrandsArr[trim(strtolower($br->title))] = $br->id;
                 }
 
                 if (!key_exists(trim($row[32]), $shippingRulesArr)) {
@@ -338,8 +338,8 @@ class ProductsImport implements ToCollection
                 $productVideoThumb = Utils::copyImageFromUrl($productVideoThumb, 'product');
             }
 
-
-
+            Log::info('Brands Array', ['brands_array' => $brandsArr]);
+            Log::info('Array Result', ['arr_result' => $lowercaseBrandsArr[$trimmedBrand] ?? null]);
             $pArr = [
                 'image' => $productImageName,
                 'video' => $productVideoName,
@@ -349,7 +349,7 @@ class ProductsImport implements ToCollection
                 'slug' => $slug,
                 'tags' => $row[33],
                 'tax_rule_id' => $taxRulesArr[trim($row[34])],
-                'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
+                'brand_id' => trim($row[1]) == '' ? null : $lowercaseBrandsArr[$trimmedBrand],
                 'shipping_rule_id' => $shippingRulesArr[trim($row[35])],
                 'bundle_deal_id' => trim($row[37]) == '' ? null : $bundleDealsArr[trim($row[34])],
                 'stock' => $row[9],
