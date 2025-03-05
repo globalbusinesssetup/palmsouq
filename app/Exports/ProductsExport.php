@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -48,10 +49,7 @@ class ProductsExport implements FromCollection, WithHeadings
         ];
 
 
-
-
         if ($lang) {
-
 
             $query = $query->with(['product_images.attributes.value' =>
                 function ($query) use ($lang) {
@@ -224,42 +222,29 @@ class ProductsExport implements FromCollection, WithHeadings
 
 
 
-            $images = [];
-            foreach ($i->product_images as $k){
-
-                $img['image'] = $k->image;
-                $img['attributes'] = [];
-
-
-
-
-                if(count($k->attributes) > 0) {
-                    foreach ($k->attributes as $l){
-
-                        if($l->value){
-                            array_push($img['attributes'], $l->value->title);
-                        }
-
-                    }
+            $images = $i->product_images->map(function($productImage) {
+                $attributes = $productImage->attributes->map(function($attr) {
+                    return $attr->value ? $attr->value->title : null;
+                })->filter()->values();
+                
+                return [
+                    'image' => $productImage->image,
+                    'attributes' => $attributes->all()
+                ];
+            })->all();
+            
+            if (!empty($images)) {
+                foreach ($images as $index => $img) {
+                    $i["image_" . ($index + 1)] = "https://admin.palmsouq.com/uploads/" . $img['image'];
                 }
-                array_push($images, $img);
-            }
-
-            if(count($images) > 0){
-
-                $i['images'] = json_encode($images);
             } else {
-
                 $i['images'] = "";
             }
 
 
 
 
-            unset($i['product_images']);
-            unset($i['product_inventories']);
-            unset($i['product_categories']);
-            unset($i['product_collections']);
+            $i->makeHidden(['product_images', 'product_inventories', 'product_categories', 'product_collections', 'inventory', 'category']);
         }
 
         return $all;
@@ -301,7 +286,13 @@ class ProductsExport implements FromCollection, WithHeadings
             'Collections',
             'Categories',
             // 'Inventories',
-            'Images'
+            'Gallery Image 1',
+            'Gallery Image 2',
+            'Gallery Image 3',
+            'Gallery Image 4',
+            'Gallery Image 5',
+            'Gallery Image 6',
+            'Gallery Image 7',
         ];
     }
 }
