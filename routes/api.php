@@ -739,7 +739,7 @@ Route::group([
         'prefix' => 'cart',
     ], function (){
         Route::get('by-user', [CartsController::class, "byUser"]);
-        Route::post('action', [CartsController::class, "action"]);
+        Route::post('action/{id?}', [CartsController::class, "action"]);
         Route::post('buy-now', [CartsController::class, "buyNow"]);
         Route::delete('delete/{id}', [CartsController::class, 'delete']);
         Route::post('change', [CartsController::class, 'changeSelected']);
