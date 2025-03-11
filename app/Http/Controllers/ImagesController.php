@@ -10,13 +10,14 @@ use App\Models\Helper\Validation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Config;
-use Stripe\File;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ImagesController extends ControllerHelper
 {
     public function all(Request $request)
     {
         try {
+
             if ($can = Utils::userCan($this->user, 'bulk_upload.view')) {
                 return $can;
             }
@@ -55,10 +56,33 @@ class ImagesController extends ControllerHelper
             }
 
             // Merge filtered files (if needed for additional processing)
-            $test = array_merge($files, []);
+            $files = array_merge($files, []);
+            // Filter files based on search query if provided
+            if ($request->has('q') && !empty($request->q)) {
+                $searchQuery = strtolower($request->q);
+                $files = array_filter($files, function($file) use ($searchQuery) {
+                    return Str::contains(strtolower($file), $searchQuery);
+                });
+            }
+
+            $page = request()->get('page', 1); // Get the current page (default 1)
+            $perPage = Config::get('constants.api.PAGINATION'); // Set items per page
+
+            // Convert array to Laravel Collection
+            $filesCollection = collect($files);
+            \Log::info($filesCollection);
+            // Paginate the collection
+            $paginatedFiles = new LengthAwarePaginator(
+                $filesCollection->forPage($page, $perPage)->values(), // Slice items for current page
+                $filesCollection->count(), // Total count
+                $perPage,
+                $page, // Current page
+                ['path' => request()->url()] // Uses current request URL for pagination
+            );
 
             // Return the response
-            return response()->json(new Response($request->token, $test));
+            return response()->json(new Response($request->token, $paginatedFiles));
+
         } catch (\Exception $ex) {
             return response()->json(Validation::error($request->token, $ex->getMessage()));
         }

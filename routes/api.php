@@ -739,7 +739,7 @@ Route::group([
         'prefix' => 'cart',
     ], function (){
         Route::get('by-user', [CartsController::class, "byUser"]);
-        Route::post('action', [CartsController::class, "action"]);
+        Route::post('action/{id?}', [CartsController::class, "action"]);
         Route::post('buy-now', [CartsController::class, "buyNow"]);
         Route::delete('delete/{id}', [CartsController::class, 'delete']);
         Route::post('change', [CartsController::class, 'changeSelected']);
@@ -773,6 +773,7 @@ Route::group([
         Route::post('by-user', [OrdersController::class, "byUser"]);
         Route::post('action', [OrdersController::class, "action"]);
         Route::post('payment-done', [OrdersController::class, 'paymentDone']);
+        Route::post('payment-failed', [OrdersController::class, 'paymentFailed']);
         Route::post('transaction', [OrdersController::class, 'transaction']);
         Route::get('send-order-email/{id}', [OrdersController::class, 'sendOrderEmail']);
         Route::get('find/{id}', [OrdersController::class, 'find']);

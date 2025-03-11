@@ -15,9 +15,7 @@ use App\Models\Helper\FileHelper;
 use App\Models\Helper\Response;
 use App\Models\Helper\Utils;
 use App\Models\Helper\Validation;
-use App\Models\Inventory;
 use App\Models\InventoryAttribute;
-use App\Models\Order;
 use App\Models\OrderedProduct;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -129,6 +127,10 @@ class ProductsController extends ControllerHelper
                               ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
                     });
                 }
+                $query = $query->with(['product_inventories' => function ($query) {
+                    $query->select('product_id', \DB::raw('SUM(quantity) as total_quantity'))
+                          ->groupBy('product_id');
+                }]);
             }
 
             $data = $query->paginate(Config::get('constants.api.PAGINATION'));
@@ -327,6 +329,7 @@ class ProductsController extends ControllerHelper
                 $filtered = array_filter($request->all(), function ($element) {
                     return !is_array($element);
                 });
+                
                 unset($filtered['primary_category_id']);
 
 
@@ -384,6 +387,33 @@ class ProductsController extends ControllerHelper
                 }
             }
 
+            // Product Inventories
+            if (!is_null($request['stock'])) {
+                $sku = $request['sku'];
+                $quantity = $request['stock'];
+                $price = $request['offered'] ?: $request['selling'];
+
+                $existingInv = UpdatedInventory::where('product_id', $id)
+                    ->where('sku', $sku)
+                    ->first();
+            
+                if ($existingInv) {
+                    // Update the existing inventory
+                    $existingInv->update([
+                        'quantity' => $quantity,
+                        'price' => $price
+                    ]);
+                } else {
+                    // Create a new inventory
+                    UpdatedInventory::create([
+                        'product_id' => $id,
+                        'sku' => $sku,
+                        'quantity' => $quantity,
+                        'price' => $price
+                    ]);
+                }
+            }
+
             //Product categories
 
             if (!is_null($request['product_categories'])) {
@@ -429,6 +459,8 @@ class ProductsController extends ControllerHelper
                 }
                 CollectionWithProduct::insert($productCollections);
             }
+
+
 
 
             $product = Product::with(['product_images.attributes'])

@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
@@ -183,6 +184,8 @@ class ProductsImport implements ToCollection
 
 
 
+            $trimmedBrand = strtolower(trim($row[1]));
+            $lowercaseBrandsArr = array_change_key_case($brandsArr, CASE_LOWER);
 
             if ($lang) {
 
@@ -201,7 +204,9 @@ class ProductsImport implements ToCollection
                 }
 
 
-                if (!key_exists(trim($row[1]), $brandsArr)) {
+                
+
+                if (!array_key_exists($trimmedBrand, $lowercaseBrandsArr)) {
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => "",
@@ -211,7 +216,7 @@ class ProductsImport implements ToCollection
                         'brand_id' => $br->id, 'title' => trim($row[1]), 'lang' => $lang
                     ]);
 
-                    $brandsArr[trim($row[1])] = $br->id;
+                    $lowercaseBrandsArr[trim(strtolower($row[1]))] = $br->id;
                 }
 
                 if (!key_exists(trim($row[32]), $shippingRulesArr)) {
@@ -265,13 +270,15 @@ class ProductsImport implements ToCollection
                     ]);
                     $taxRulesArr[$tr->title] = $tr->id;
                 }
-
-                if (!key_exists(trim($row[1]), $brandsArr)) {
+                
+                Log::info('trimmedBrand inside else condition', ['trimmedBrand' => $trimmedBrand]);
+                if (!array_key_exists($trimmedBrand, $lowercaseBrandsArr)) {
+                    Log::info('trimmedBrand', ['trimmedBrand' => $row[1]]);
                     $br = Brand::create([
                         'admin_id' => $adminId,
                         'title' => trim($row[1])
                     ]);
-                    $brandsArr[$br->title] = $br->id;
+                    $lowercaseBrandsArr[trim(strtolower($br->title))] = $br->id;
                 }
 
                 if (!key_exists(trim($row[32]), $shippingRulesArr)) {
@@ -331,8 +338,8 @@ class ProductsImport implements ToCollection
                 $productVideoThumb = Utils::copyImageFromUrl($productVideoThumb, 'product');
             }
 
-
-
+            Log::info('Brands Array', ['brands_array' => $brandsArr]);
+            Log::info('Array Result', ['arr_result' => $lowercaseBrandsArr[$trimmedBrand] ?? null]);
             $pArr = [
                 'image' => $productImageName,
                 'video' => $productVideoName,
@@ -342,7 +349,7 @@ class ProductsImport implements ToCollection
                 'slug' => $slug,
                 'tags' => $row[33],
                 'tax_rule_id' => $taxRulesArr[trim($row[34])],
-                'brand_id' => trim($row[1]) == '' ? null : $brandsArr[trim($row[1])],
+                'brand_id' => trim($row[1]) == '' ? null : $lowercaseBrandsArr[$trimmedBrand],
                 'shipping_rule_id' => $shippingRulesArr[trim($row[35])],
                 'bundle_deal_id' => trim($row[37]) == '' ? null : $bundleDealsArr[trim($row[34])],
                 'stock' => $row[9],
@@ -571,6 +578,7 @@ class ProductsImport implements ToCollection
                         $imageName = Utils::copyImageFromUrl($imageName, 'product');
                     } else {
                         // If the image is local, search for it in the public/uploads directory
+                        \Log::info('imageName', ['image' => $imageName]);
                         $imageName = Utils::searchImageInStorage($imageName);
                     }
                     \Log::info('imageName', ['image' => $imageName]);

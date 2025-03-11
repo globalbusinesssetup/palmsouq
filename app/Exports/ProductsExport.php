@@ -48,10 +48,7 @@ class ProductsExport implements FromCollection, WithHeadings
         ];
 
 
-
-
         if ($lang) {
-
 
             $query = $query->with(['product_images.attributes.value' =>
                 function ($query) use ($lang) {
@@ -192,12 +189,19 @@ class ProductsExport implements FromCollection, WithHeadings
 
 
             $categories = [];
+            $primary_cat = null;
             foreach ($i->product_categories as $j) {
+                if ($primary_cat === null) {
+                    if($j->category->slug){
+                        $primary_cat = $j->category->slug;
+                    }else{
+                        $primary_cat = strtolower(str_replace(' ', '-', $j->category->title));
+                    }
+                }
                 array_push($categories, $j->category->title);
             }
 
             $i['categories'] = join(', ', $categories);
-
 
             $inventories = [];
             foreach ($i->product_inventories as $k){
@@ -222,44 +226,41 @@ class ProductsExport implements FromCollection, WithHeadings
             // $i['inventories'] = json_encode($inventories);
 
 
+            $admin_url = "https://admin.palmsouq.com/";
+            $base_url = "https://palmsouq.com/";
 
-
-            $images = [];
-            foreach ($i->product_images as $k){
-
-                $img['image'] = $k->image;
-                $img['attributes'] = [];
-
-
-
-
-                if(count($k->attributes) > 0) {
-                    foreach ($k->attributes as $l){
-
-                        if($l->value){
-                            array_push($img['attributes'], $l->value->title);
-                        }
-
-                    }
-                }
-                array_push($images, $img);
+            if($primary_cat){
+                $i['product_url'] = $base_url . $primary_cat . '/' . $i->slug . '/' . $i->id;
+            }else{
+                $i['product_url'] = $base_url . $primary_cat . '/' . $i->slug . '/' . $i->id;
             }
 
-            if(count($images) > 0){
-
-                $i['images'] = json_encode($images);
+            $images = $i->product_images->map(function($productImage) {
+                $attributes = $productImage->attributes->map(function($attr) {
+                    return $attr->value ? $attr->value->title : null;
+                })->filter()->values();
+                
+                return [
+                    'image' => $productImage->image,
+                    'attributes' => $attributes->all()
+                ];
+            })->all();
+            
+            if (!empty($images)) {
+                foreach ($images as $index => $img) {
+                    $i["image_" . ($index + 1)] = $admin_url . "uploads/" . $img['image'];
+                }
             } else {
-
                 $i['images'] = "";
             }
 
+            $image = $i->image;
 
+            if($image){
+                $i['image'] = $admin_url . "uploads/" . $image;
+            }
 
-
-            unset($i['product_images']);
-            unset($i['product_inventories']);
-            unset($i['product_categories']);
-            unset($i['product_collections']);
+            $i->makeHidden(['product_images', 'product_inventories', 'product_categories', 'product_collections', 'inventory', 'category']);
         }
 
         return $all;
@@ -301,7 +302,15 @@ class ProductsExport implements FromCollection, WithHeadings
             'Collections',
             'Categories',
             // 'Inventories',
-            'Images'
+            
+            'Product Url',
+            'Gallery Image 1',
+            'Gallery Image 2',
+            'Gallery Image 3',
+            'Gallery Image 4',
+            'Gallery Image 5',
+            'Gallery Image 6',
+            'Gallery Image 7'
         ];
     }
 }

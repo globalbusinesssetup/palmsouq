@@ -28,6 +28,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Mpdf\Mpdf;
 use Razorpay\Api\Api;
@@ -261,33 +262,29 @@ class OrdersController extends ControllerHelper
             $query = $query->orderBy('orders.' . $request->orderby, $request->type);
 
             if ($request->filter) {
-
-                foreach (explode(',', $request->filter) as $i) {
-                    if ($i == 'cancelled') {
-                        $query = $query->orWhere('cancelled', 1);
+                $query->where(function ($q) use ($request) {
+                    foreach (explode(',', $request->filter) as $i) {
+                        if ($i == 'cancelled') {
+                            $q->orWhere('cancelled', 1);
+                        }
+                        if ($i == 'paid') {
+                            $q->orWhere('payment_done', 1);
+                        }
+                        if ($i == 'unpaid') {
+                            $q->orWhere('payment_done', 0)
+                                ->whereNotIn('order_method', [Config::get('constants.paymentMethod.STRIPE')]);
+                        }
+                        if ($i == 'cash_on_delivery') {
+                            $q->orWhere('order_method', Config::get('constants.paymentMethod.CASH_ON_DELIVERY'));
+                        }
                     }
-                    if ($i == 'paid') {
-                        $query = $query->orWhere('payment_done', 1);
-                    }
-                    if ($i == 'unpaid') {
-                        $query = $query->orWhere('payment_done', 0);
-                    }
-                    if ($i == 'card_payment') {
-                        $query = $query
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.RAZORPAY'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.STRIPE'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.FLUTTERWAVE'))
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.IYZICO_PAYMENT'));
-                    }
-                    if ($i == 'paypal') {
-                        $query = $query
-                            ->orWhere('order_method', Config::get('constants.paymentMethod.PAYPAL'));
-                    }
-                    if ($i == 'cash_on_delivery') {
-                        $query = $query->orWhere('order_method',
-                            Config::get('constants.paymentMethod.CASH_ON_DELIVERY'));
-                    }
-                }
+                });
+            } else {
+                // If no filter, exclude orders with Stripe where payment_done = 0
+                $query->where(function ($q) {
+                    $q->where('order_method', '!=', Config::get('constants.paymentMethod.STRIPE'))
+                      ->orWhere('payment_done', '!=', 0);
+                });
             }
 
 
@@ -390,8 +387,7 @@ class OrdersController extends ControllerHelper
     public function find(Request $request, $id)
     {
         try {
-
-            if (!$request->user('user')) {
+            if (!$request->user('user') && !$request->user_token) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
 
@@ -1385,6 +1381,7 @@ class OrdersController extends ControllerHelper
                 }*/
 
                 $shippingId = [];
+                $shippingPrice = 10;
 
                 foreach ($existingCart as $key => $cart) {
                     if ($cart->shipping_place_id && !is_null($cart->product_inner)) {
@@ -1417,7 +1414,6 @@ class OrdersController extends ControllerHelper
                         // Shipping price calculation
 
                         $currentShippingId = $cart->shipping_place->shipping_rule->id;
-                        $shippingPrice = 0;
 
 
                         $shippingIdExists = key_exists($currentShippingId, $shippingId) &&
@@ -1462,7 +1458,7 @@ class OrdersController extends ControllerHelper
 
                         $totalTax = (float)($taxQtyOffer * (int)$cart->quantity);
                         $priceWithoutBundle = (float)($currentPrice * ((int)$cart->quantity - (int)$bundleQtyOffer));
-                        $total = (float)($shippingPrice + $totalTax + $priceWithoutBundle);
+                        $total = (float)($totalTax + $priceWithoutBundle);
 
                         $totalPrice += $total;
 
@@ -1494,6 +1490,7 @@ class OrdersController extends ControllerHelper
                     }
                 }
 
+                $totalPrice = $totalPrice < 100 ? $totalPrice + $shippingPrice : $totalPrice;
 
                 $totalPrice = number_format($totalPrice, 2, '.', '');
 
@@ -1510,7 +1507,6 @@ class OrdersController extends ControllerHelper
                         Cart::where('user_id', $user->id)
                             ->where('selected', Config::get('constants.status.PUBLIC'))
                             ->delete();
-
 
                         $re['name'] = $user->name;
                         $re['email'] = $user->email;
@@ -1644,6 +1640,131 @@ class OrdersController extends ControllerHelper
 
         } catch (\Exception $e) {
 
+            return response()->json(Validation::error($request->token, $e->getMessage()));
+        }
+    }
+
+    // create a method to delete order and associated order details
+    // it should also add the items into cart
+    public function paymentFailed(Request $request)
+    {
+        try {
+            $lang = $request->header('language');
+
+            $validate = Validation::orderStatus($request);
+            if ($validate) {
+                return response()->json($validate);
+            }
+
+            $order = Order::with('ordered_products')
+                ->where('id', $request->id)
+                ->first();
+
+            if (is_null($order)) {
+                return response()->json(Validation::error($request->token,
+                    __('lang.invalid_order', [], $lang)
+                ));
+            }
+
+            if ($request->user('user')) {
+
+                if ($order->user_id != $request->user('user')->id) {
+                    return response()->json(Validation::error($request->token,
+                        __('lang.invalid_user', [], $lang)
+                    ));
+                }
+
+            } else if ($request->user_token) {
+
+                if ($order->user_token != $request->user_token) {
+                    return response()->json(Validation::error($request->token,
+                        __('lang.invalid_user', [], $lang)
+                    ));
+                }
+
+            } else {
+
+                return response()->json(Validation::errorLang($lang));
+            }
+
+            $orderedProducts = $order->ordered_products;
+
+            $cart = Cart::with('product')
+                ->with('updated_inventory')
+                ->with('shipping_place')
+                ->with('shipping_place.shipping_rule')  
+                ->with('shipping_place.shipping_rule')
+                ->where('selected', Config::get('constants.status.PUBLIC'))
+                ->where('user_token', $request->user_token)
+                ->get();
+
+            $cartError = [];
+
+            foreach ($cart as $c) {
+                $productErr = [];
+                $error = false;
+
+                if ($c->product->status != Config::get('constants.status.PUBLIC')) {
+                    array_push($productErr,
+                        __('lang.private_product', ['product' => $c->product->title], $lang)
+                    );
+                    $error = true;
+                }
+                if ((int)$c->updated_inventory->quantity < 1) {
+                    array_push($productErr,
+                        __('lang.out_stock_product', ['product' => $c->product->title], $lang)
+                    );
+                    $error = true;
+                }
+                if ($error) {
+                    $cartError[$c->id] = $productErr;
+                }
+            }
+
+            if (count($cartError) > 0) {
+                return response()->json(Validation::error($request->token, $cartError, 'product'));
+            }
+
+            $now = Carbon::now();
+
+            foreach ($orderedProducts as $op) {
+                $cart = Cart::where('product_id', $op->product_id)
+                    ->where('user_token', $request->user_token)
+                    ->where('selected', Config::get('constants.status.PUBLIC'))
+                    ->first();
+
+                if ($cart) {
+                    Cart::where('id', $cart->id)
+                        ->delete();
+                } else {
+                    Cart::create([
+                        'product_id' => $op->product_id,
+                        'user_id' => $request->user('user')->id ?? null,
+                        'user_token' => $request->user_token ?? null,
+                        'quantity' => $op->quantity,
+                        'selected' => Config::get('constants.status.PUBLIC'),
+                        'shipping_place_id' => $op->shipping_place_id,
+                        'shipping_type' => $op->shipping_type,
+                        'inventory_id' => $op->inventory_id,
+                        'created_at' => $now,
+                        'updated_at' => $now
+                    ]);
+                }
+
+                UpdatedInventory::where('id', $op->inventory_id)
+                    ->increment('quantity', $op->quantity);
+            }
+
+            OrderedProduct::where('order_id', $request->id)
+                ->delete();
+            
+            Order::where('id', $request->id)
+                ->delete();
+
+            return response()->json(new Response($request->token, __('lang.order_deleted', [], $lang)));
+
+        } catch (\Exception $e) {
+            
             return response()->json(Validation::error($request->token, $e->getMessage()));
         }
     }

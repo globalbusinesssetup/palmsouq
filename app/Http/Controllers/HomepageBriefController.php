@@ -35,17 +35,6 @@ class HomepageBriefController extends ControllerHelper {
             $homepageBrief = new HomepageBrief();
         }
 
-        // Update text fields
-        // $homepageBrief->title = $request->input('title');
-        // $homepageBrief->subtitle = $request->input('subtitle');
-        // $homepageBrief->description = $request->input('description');
-
-        // Handle image upload
-        // if ($request->hasFile('image')) {
-        //     $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
-        //     $request['image'] = $image_info['name'];
-        // }
-
         $old_image = $homepageBrief->image;
 
         $homepageBrief->update($request->all());
@@ -58,7 +47,7 @@ class HomepageBriefController extends ControllerHelper {
         try {
             // Validate the incoming request for image
             $request->validate([
-                'image' => 'required|file|image|mimes:jpg,png,jpeg,webp|max:2048',
+                'photo' => 'required|file|image|mimes:jpg,png,jpeg,webp|max:2048',
             ]);
     
             // Find the HomepageBrief by ID
@@ -69,8 +58,8 @@ class HomepageBriefController extends ControllerHelper {
             }
             $old_image = $homepageBrief->image;
             // Handle image upload using FileHelper
-            if ($request->hasFile('image')) {
-                $image_info = FileHelper::uploadImage($request['image'], 'homepage_brief');
+            if ($request->hasFile('photo')) {
+                $image_info = FileHelper::uploadImage($request['photo'], 'homepage_brief');
                 $homepageBrief->image = $image_info['name'];
             }
             if($homepageBrief->save()) {

@@ -173,9 +173,9 @@ class Validation
     public static function user_address($request)
     {
         $rules = [
+            'label' => 'required',
             'country' => 'required|min:2|max:2',
             'city' => 'required',
-            // 'zip' => 'required',
             'address_1' => 'required',
             'email' => 'required',
             'name' => 'required',
@@ -575,7 +575,7 @@ class Validation
         if(!$message){
             $message = __('lang.went_wrong', [], $lang);
         }
-        return new Response($token, [$error_type => [$message]], 201, $message);
+        return new Response($token, [$error_type => [$message]], 500, $message);
     }
 
 
@@ -610,7 +610,7 @@ class Validation
     }
 
 
-    public static function noData($status = 201, $message = null, $error_type = 'form', $lang = null)
+    public static function noData($status = 404, $message = null, $error_type = 'form', $lang = null)
     {
         if(!$message){
             $message = __('lang.couldnt_found', [], $lang);
@@ -1027,16 +1027,17 @@ class Validation
             return self::validationMessage($request, $rules, $errorType);
         }
     }
+
     public static function bulk_image_upload($request, $errorType = 'image')
     {
         // Check the environment configuration for media storage
         if (env('MEDIA_STORAGE') == config('env.media.URL')) {
             // Allow only image files (jpeg, png, jpg, gif) and max 10MB per file
-            $rules['images'] = 'required|array|max:250'; // You can also limit the number of files, e.g., max 250
+            $rules['images'] = 'required|array|max:750'; // You can also limit the number of files, e.g., max 250
             $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif,webp|max:10240'; // 10MB per image, and only image files allowed
         } else {
             // Same validation logic for the else case
-            $rules['images'] = 'required|array|max:250';
+            $rules['images'] = 'required|array|max:750';
             $rules['images.*'] = 'file|mimes:jpeg,png,jpg,gif,webp|max:10240'; // Same rules for images
         }
 
