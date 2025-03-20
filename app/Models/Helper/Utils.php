@@ -324,7 +324,7 @@ class Utils
         }
 
         $calculated['subtotal'] = $subtotal;
-        $calculated['shipping_price'] = $shipping_price;
+        $calculated['shipping_price'] = $subtotal >= 100 ? 0 : $shipping_price;
         $calculated['bundle_offer'] = $bundle_offer;
         $calculated['tax'] = round($tax, 2);
 
