@@ -1458,7 +1458,7 @@ class OrdersController extends ControllerHelper
 
                         $totalTax = (float)($taxQtyOffer * (int)$cart->quantity);
                         $priceWithoutBundle = (float)($currentPrice * ((int)$cart->quantity - (int)$bundleQtyOffer));
-                        $total = (float)($totalTax + $priceWithoutBundle);
+                        $total = (float)($priceWithoutBundle);
 
                         $totalPrice += $total;
 
@@ -1975,7 +1975,6 @@ class OrdersController extends ControllerHelper
 
         return response()->json(new Response($request->token, true));
     }
-
 
 
     public function checkOrder(Request $request)

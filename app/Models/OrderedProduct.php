@@ -37,7 +37,7 @@ class OrderedProduct extends Model
     public function product()
     {
         return $this->hasOne(Product::class, 'id', 'product_id')
-            ->select(['id', 'title', 'slug', 'image', 'selling', 'offered', 'shipping_rule_id',
+            ->select(['id', 'title', 'slug', 'image', 'selling', 'sku', 'offered', 'shipping_rule_id',
                 'bundle_deal_id', 'unit']);
     }
 
