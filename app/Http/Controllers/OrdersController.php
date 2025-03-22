@@ -392,7 +392,9 @@ class OrdersController extends ControllerHelper
             }
 
             $lang = $request->header('language');
-            $adminId = $request->user('user')->id;
+            if($request->user('user')) {
+                $adminId = $request->user('user')->id;
+            }
             
             // Query for the order
             $query = Order::query();
@@ -403,7 +405,6 @@ class OrdersController extends ControllerHelper
                 'guest_user', 
                 'ordered_products.shipping_place',
             ]);
-
             $order = $query->find($id);
 
             if (is_null($order)) {
@@ -419,23 +420,36 @@ class OrdersController extends ControllerHelper
 
             // Add ownership check for authenticated users
             if (!$this->isSuperAdmin) {
-                $query->whereHas('user', function ($q) use ($request) {
-                    $q->where('id', $request->user('user')->id);
-                });
+                if ($request->user('user')) {
+                    $query->whereHas('user', function ($q) use ($request) {
+                        $q->where('id', $request->user('user')->id);
+                    });
+                } else if ($request->user_token) {
+                    $query->whereHas('guest_user', function ($q) use ($request) {
+                        $q->where('user_token', $request->user_token);
+                    });
+                }
             }
             
 
             // Find the order
             $order = $query->find($id);
-            \Log::info('Request Data:', ['order' => $order]);
             // Check if the order exists
             if (is_null($order)) {
-                return response()->json(Validation::nothingFoundLang($lang));
+                return response()->json(Validation::nothingFoundLang($lang, 404), 404);
             }
 
             // Ensure ownership for non-admin users
-            if (!$this->isSuperAdmin && (int)$order->user_id !== (int)$request->user('user')->id) {
-                return response()->json(Validation::error($request->token, 'Unauthorized access to this order.'), 403);
+            if (!$this->isSuperAdmin) {
+                if ($request->user('user')) {
+                    if ($order->user_id != $request->user('user')->id) {
+                        return response()->json(Validation::error($request->token, 'Unauthorized access to this order.'), 403);
+                    }
+                } else if ($request->user_token) {
+                    if ($order->user_token != $request->user_token) {
+                        return response()->json(Validation::error($request->token, 'Unauthorized access to this order.'), 403);
+                    }
+                }
             }
 
             // Process order details
@@ -459,7 +473,7 @@ class OrdersController extends ControllerHelper
 
             return response()->json(new Response($request->token, $order));
         } catch (\Exception $ex) {
-            return response()->json(Validation::error($request->token, $ex->getMessage()));
+            return response()->json(Validation::error($request->token, $ex->getMessage()), 500);
         }
     }
 
