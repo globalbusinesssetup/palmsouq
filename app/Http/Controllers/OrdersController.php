@@ -1465,8 +1465,9 @@ class OrdersController extends ControllerHelper
                                 $taxQtyOffer = $taxRule->price;
                             } else {
                                 $taxQtyOffer = number_format(
-                                    (float)($taxRule->price * $currentPrice) / 100,
-                                    2, '.', '');
+                                    round(($currentPrice * $taxRule->price) / (100 + $taxRule->price), 2), 
+                                    2, '.', ''
+                                );                                
                             }
                         }
 
