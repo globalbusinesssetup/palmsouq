@@ -1493,7 +1493,7 @@ class OrdersController extends ControllerHelper
                             'purchased' => $cart->product_inner->purchased,
                             'bundle_offer' => $bundleQtyOffer,
                             'shipping_price' => $shippingPrice,
-                            'selling' => $currentPrice,
+                            'selling' => $currentPrice - $taxQtyOffer,
                             'withdrawn' => Config::get('constants.withdrawn.NO'),
                             'order_id' => $order->id,
                             'updated_at' => $now,

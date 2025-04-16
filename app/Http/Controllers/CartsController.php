@@ -415,6 +415,13 @@ class CartsController extends Controller
     public function changeSelected(Request $request)
     {
         try {
+            // validate the request
+
+            $validate = Validation::changeSelected($request);
+            if ($validate) {
+                return response()->json($validate, 422);
+            }
+
 
             Cart::whereIn('id', $request->checked)
                 ->update(['selected' => 1]);
