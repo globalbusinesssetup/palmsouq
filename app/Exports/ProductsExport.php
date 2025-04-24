@@ -226,13 +226,13 @@ class ProductsExport implements FromCollection, WithHeadings
             // $i['inventories'] = json_encode($inventories);
 
 
-            $admin_url = "https://admin.palmsouq.com/";
-            $base_url = "https://palmsouq.com/";
+            $admin_url = "https://admin.shukransoouq.com/";
+            $base_url = "https://shukransoouq.com/";
 
             if($primary_cat){
                 $i['product_url'] = $base_url . $primary_cat . '/' . $i->slug . '/' . $i->id;
             }else{
-                $i['product_url'] = $base_url . $primary_cat . '/' . $i->slug . '/' . $i->id;
+                $i['product_url'] = $base_url . 'category' . '/' . $i->slug . '/' . $i->id;
             }
 
             $images = $i->product_images->map(function($productImage) {
