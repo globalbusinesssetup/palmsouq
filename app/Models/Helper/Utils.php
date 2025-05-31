@@ -344,7 +344,7 @@ class Utils
         }
         $calculated['voucher_price'] = $voucherPrice;
 
-        $calculated['total_price'] = $totalPriceWithoutShipping + $calculated['shipping_price'] - $voucherPrice;
+        $calculated['total_price'] = ($totalPriceWithoutShipping + $calculated['shipping_price'] + $calculated['tax']) - $voucherPrice;
 
         return $calculated;
     }
