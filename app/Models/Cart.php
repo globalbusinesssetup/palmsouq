@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Config;
 class Cart extends Model
 {
     use HasFactory;
+    
+    // selected should be number
 
     protected $fillable = [
         'product_id', 'inventory_id', 'user_id', 'quantity', 'selected',

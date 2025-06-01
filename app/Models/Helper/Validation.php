@@ -688,6 +688,16 @@ class Validation
         return self::validationMessage($request, $rules);
     }
 
+    // cart change selected validation
+    public static function changeSelected($request){
+        // either checked or unchecked is required
+        $rules = [
+            'checked' => 'required_without:unchecked',
+            'unchecked' => 'required_without:checked'
+        ];
+        return self::validationMessage($request, $rules);
+    }
+
 
     public static function sendSubscriptionEmail($request){
         $rules = [
