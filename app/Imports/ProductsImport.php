@@ -363,38 +363,30 @@ class ProductsImport implements ToCollection
                 'admin_id' => $adminId
             ];
 
-            if (trim($row[39])) {
-
-                $updateArr = [];
-                if ($lang) {
-
-                    $updateArr = $pArr;
-                } else {
-
-                    $updateArr = array_merge($prodData, $pArr);
-                }
-
-                $existingProd = Product::where('id', trim($row[39]))->first();
+            // Check if product exists by SKU
+            $sku = trim($row[6]);
+            if (!empty($sku)) {
+                $existingProd = Product::where('sku', $sku)->first();
 
                 if ($existingProd) {
+                    $updateArr = [];
+                    if ($lang) {
+                        $updateArr = $pArr;
+                    } else {
+                        $updateArr = array_merge($prodData, $pArr);
+                    }
+
                     if (trim($row[4]) == '') {
                         unset($updateArr['slug']);
                     }
 
-                    Product::where('id', trim($row[39]))->update($updateArr);
-
-                    $prod = new Product();
-                    $prod->id = trim($row[39]);
-
+                    Product::where('sku', $sku)->update($updateArr);
+                    $prod = $existingProd;
                 } else {
                     $prod = Product::create(array_merge($prodData, $pArr));
                 }
-
-
             } else {
-
                 $prod = Product::create(array_merge($prodData, $pArr));
-
             }
 
             if ($lang) {
