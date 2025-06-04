@@ -910,7 +910,8 @@ class FrontendController extends Controller
 
                     $queryP = $queryP->where(function ($q) use ($request) {
                         $q->where('pl.title', 'LIKE', "%{$request->q}%")
-                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%");
+                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%")
+                            ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
                     });
 
                 } else {
@@ -925,7 +926,8 @@ class FrontendController extends Controller
 
                     $queryP = $queryP->where(function ($q) use ($request) {
                         $q->where('products.title', 'LIKE', "%{$request->q}%")
-                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%");
+                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%")
+                            ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
                     });
                 }
 
@@ -1012,7 +1014,8 @@ class FrontendController extends Controller
                 if ($request->q) {
                     $query = $query->where(function ($q) use ($request) {
                         $q->where('pl.title', 'LIKE', "%{$request->q}%")
-                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%");
+                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%")
+                            ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
                     });
                 } else if ($request->home_spm || $request->banner) {
 
@@ -1106,7 +1109,8 @@ class FrontendController extends Controller
                 if ($request->q) {
                     $query = $query->where(function ($q) use ($request) {
                         $q->where('products.title', 'LIKE', "%{$request->q}%")
-                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%");
+                            ->orWhere('products.tags', 'LIKE', "%{$request->q}%")
+                            ->orWhere('products.sku', 'LIKE', "%{$request->q}%");
                     });
                 } else if ($request->home_spm || $request->banner) {
 
